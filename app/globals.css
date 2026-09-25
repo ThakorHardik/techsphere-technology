@@ -1,26 +1,146 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* TechSphere Locked Brand Palette */
+  --color-tech-brown: var(--tech-brown);
+  --color-deep-brown: var(--deep-brown);
+  --color-warm-cream: var(--warm-cream);
+  --color-soft-cream: var(--soft-cream);
+  --color-white: var(--white);
+  --color-black: var(--black);
+
+  /* Semantic UI Tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-heading: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Border Radii */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
 }
 
-@media (prefers-color-scheme: dark) {
+:root {
+  /* TechSphere Locked Brand Palette (Working Web Values) */
+  --tech-brown: #4A3725;
+  --deep-brown: #35261A;
+  --warm-cream: #FFF6ED;
+  --soft-cream: #F6EDE3;
+  --white: #FFFFFF;
+  --black: #111111;
+
+  /* Semantic UI Tokens (Light Mode - Warm Cream Canvas) */
+  --background: #FFF6ED;
+  --foreground: #111111;
+  --card: #F6EDE3;
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  --primary: #4A3725;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EADBC8;
+  --secondary-foreground: #35261A;
+  --muted: #EADBC8;
+  --muted-foreground: #6A5644;
+  --accent: #EADBC8;
+  --accent-foreground: #35261A;
+  --destructive: #B91C1C;
+  --destructive-foreground: #FFFFFF;
+  --border: #E3D2C0;
+  --input: #E3D2C0;
+  --ring: #4A3725;
+  --radius: 0.625rem;
+
+  /* Layout Header Dimension */
+  --header-height: 5rem;
+}
+
+@media (min-width: 640px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --header-height: 5.5rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 6rem;
+  }
+}
+
+.dark {
+  /* Semantic UI Tokens (Dark Mode - Deep Architectural Ground) */
+  --background: #1F1710;
+  --foreground: #F6EDE3;
+  --card: #2A1F16;
+  --card-foreground: #FFF6ED;
+  --popover: #2A1F16;
+  --popover-foreground: #FFF6ED;
+  --primary: #E8D5C4;
+  --primary-foreground: #1F1710;
+  --secondary: #35261A;
+  --secondary-foreground: #F6EDE3;
+  --muted: #35261A;
+  --muted-foreground: #BFAFA2;
+  --accent: #35261A;
+  --accent-foreground: #F6EDE3;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #423223;
+  --input: #423223;
+  --ring: #E8D5C4;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  /* Accessibility: Respect Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
