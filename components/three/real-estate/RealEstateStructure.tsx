@@ -50,7 +50,7 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
   const fGlazing = phases ? phases.glazing : 1.0;
   const fFinal = phases ? phases.finalIntegration : 1.0;
 
-  // 1. Procedural Tactile Fine-Grained Limestone Bump Texture
+  // 1a. Procedural Tactile Fine-Grained Limestone Bump Texture
   const stoneBumpTexture = React.useMemo(() => {
     if (typeof document === "undefined") return null;
     const canvas = document.createElement("canvas");
@@ -65,10 +65,8 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     for (let y = 0; y < 256; y++) {
       for (let x = 0; x < 256; x++) {
         const i = (y * 256 + x) * 4;
-        // Fine micro-pore limestone grain
-        const fineGrain = (Math.random() - 0.5) * 16;
-        // Low-frequency soft natural sedimentary variation
-        const lowFreq = Math.sin(x * 0.04) * Math.cos(y * 0.04) * 5;
+        const fineGrain = (Math.random() - 0.5) * 14;
+        const lowFreq = Math.sin(x * 0.04) * Math.cos(y * 0.04) * 4;
         const v = Math.max(0, Math.min(255, 128 + fineGrain + lowFreq));
         d[i] = v;
         d[i + 1] = v;
@@ -79,12 +77,78 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(5, 5);
+    tex.repeat.set(4, 4);
     tex.needsUpdate = true;
     return tex;
   }, []);
 
-  // 1b. Procedural Sky / Horizon Equirectangular Reflection Texture with Subtle 3/4 Sheen
+  // 1b. Procedural Limestone Roughness Map (Micro-variation in specular sheen without visual noise)
+  const stoneRoughnessTexture = React.useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#BEBEBE"; // baseline ~0.75 roughness
+    ctx.fillRect(0, 0, 256, 256);
+    const imgData = ctx.getImageData(0, 0, 256, 256);
+    const d = imgData.data;
+    for (let y = 0; y < 256; y++) {
+      for (let x = 0; x < 256; x++) {
+        const i = (y * 256 + x) * 4;
+        // Subtle soft sedimentary undulation (±12) + micro-pores
+        const wave = Math.sin(x * 0.035 + y * 0.02) * 8 + Math.cos(x * 0.02 - y * 0.03) * 6;
+        const grain = (Math.random() - 0.5) * 6;
+        const v = Math.max(170, Math.min(218, 194 + wave + grain));
+        d[i] = v;
+        d[i + 1] = v;
+        d[i + 2] = v;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 4);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
+  // 1c. Procedural Bronze Satin Micro-Roughness Texture (Restrained satin grain along extrusion axis)
+  const bronzeRoughnessTexture = React.useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#6E6E6E"; // ~0.43 roughness
+    ctx.fillRect(0, 0, 128, 128);
+    const imgData = ctx.getImageData(0, 0, 128, 128);
+    const d = imgData.data;
+    for (let y = 0; y < 128; y++) {
+      // Fine vertical striation along the Y axis
+      const lineGrain = (Math.random() - 0.5) * 12;
+      for (let x = 0; x < 128; x++) {
+        const i = (y * 128 + x) * 4;
+        const v = Math.max(95, Math.min(130, 110 + lineGrain + (Math.random() - 0.5) * 4));
+        d[i] = v;
+        d[i + 1] = v;
+        d[i + 2] = v;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 6);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
+  // 1d. Procedural Sky / Horizon Equirectangular Reflection Texture
+  // Soft atmospheric panorama: soft zenith daylight, bright horizon band, warm architectural ground reflection
   const skyReflectionTexture = React.useMemo(() => {
     if (typeof document === "undefined") return null;
     const canvas = document.createElement("canvas");
@@ -93,43 +157,44 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    // Architectural daylight reflection gradient: soft zenith daylight, bright horizon, warm ground bounce
+    // Architectural daylight reflection gradient
     const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0.0, "#A0BCD8"); // soft zenith daylight
-    grad.addColorStop(0.38, "#DCE8F0"); // bright upper sky
-    grad.addColorStop(0.48, "#F2F6F9"); // bright horizon band
-    grad.addColorStop(0.52, "#EDE7DD"); // warm horizon rim
-    grad.addColorStop(0.68, "#C2B6A6"); // warm architectural ground bounce
-    grad.addColorStop(1.0, "#887D6F"); // deep ground tone
+    grad.addColorStop(0.0, "#A4BCD2");  // soft zenith daylight
+    grad.addColorStop(0.36, "#D6E4EE"); // soft upper sky
+    grad.addColorStop(0.48, "#F0F5F9"); // crisp bright horizon
+    grad.addColorStop(0.53, "#ECE5DC"); // warm architectural ground bounce rim
+    grad.addColorStop(0.72, "#C0B4A2"); // warm terrace/stone reflection
+    grad.addColorStop(1.0, "#7D7264");  // deep ground tone
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 256);
 
-    // Subtle soft vertical daylight sheen (catches on glass from 3/4 architectural viewpoint)
-    const vertGrad = ctx.createLinearGradient(140, 0, 260, 0);
-    vertGrad.addColorStop(0.0, "rgba(255, 255, 255, 0.0)");
-    vertGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.16)");
-    vertGrad.addColorStop(1.0, "rgba(255, 255, 255, 0.0)");
-    ctx.fillStyle = vertGrad;
-    ctx.fillRect(140, 0, 120, 256);
+    // Subtle soft architectural specular catch (diffused, no harsh stripes)
+    const radial = ctx.createRadialGradient(210, 115, 0, 210, 115, 140);
+    radial.addColorStop(0.0, "rgba(255, 255, 255, 0.14)");
+    radial.addColorStop(0.6, "rgba(255, 255, 255, 0.05)");
+    radial.addColorStop(1.0, "rgba(255, 255, 255, 0.0)");
+    ctx.fillStyle = radial;
+    ctx.fillRect(0, 0, 512, 256);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.mapping = THREE.EquirectangularReflectionMapping;
     return texture;
   }, []);
 
-  // Tactile Limestone Materials
+  // Tactile Limestone Materials with Micro-Roughness Variation
   const limestoneMat = React.useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#484138" : REAL_ESTATE_PALETTE.limestoneLight,
         roughness: 0.76,
+        roughnessMap: stoneRoughnessTexture ?? undefined,
         metalness: 0.02,
         bumpMap: stoneBumpTexture ?? undefined,
-        bumpScale: 0.0016,
+        bumpScale: 0.0015,
         transparent: true,
         opacity: Math.min(1.0, fMonolith * 1.2),
       }),
-    [isDark, fMonolith, stoneBumpTexture]
+    [isDark, fMonolith, stoneBumpTexture, stoneRoughnessTexture]
   );
 
   // Subtly differentiated side flank tone for natural 3/4 depth
@@ -138,27 +203,29 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
       new THREE.MeshStandardMaterial({
         color: isDark ? "#3F3830" : REAL_ESTATE_PALETTE.limestoneFlank,
         roughness: 0.80,
+        roughnessMap: stoneRoughnessTexture ?? undefined,
         metalness: 0.02,
         bumpMap: stoneBumpTexture ?? undefined,
-        bumpScale: 0.0016,
+        bumpScale: 0.0015,
         transparent: true,
         opacity: Math.min(1.0, fMonolith * 1.2),
       }),
-    [isDark, fMonolith, stoneBumpTexture]
+    [isDark, fMonolith, stoneBumpTexture, stoneRoughnessTexture]
   );
 
   const limestoneMediumMat = React.useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#3C362F" : REAL_ESTATE_PALETTE.limestoneMedium,
-        roughness: 0.82,
+        roughness: 0.81,
+        roughnessMap: stoneRoughnessTexture ?? undefined,
         metalness: 0.02,
         bumpMap: stoneBumpTexture ?? undefined,
-        bumpScale: 0.002,
+        bumpScale: 0.0018,
         transparent: true,
         opacity: Math.min(1.0, fMonolith * 1.2),
       }),
-    [isDark, fMonolith, stoneBumpTexture]
+    [isDark, fMonolith, stoneBumpTexture, stoneRoughnessTexture]
   );
 
   // Crisp arris corner highlight reflecting daylight
@@ -166,8 +233,8 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#554D42" : REAL_ESTATE_PALETTE.limestoneArris,
-        roughness: 0.55,
-        metalness: 0.04,
+        roughness: 0.52,
+        metalness: 0.03,
         transparent: true,
         opacity: Math.min(1.0, fMonolith * 1.2),
       }),
@@ -179,12 +246,13 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#2C261F" : REAL_ESTATE_PALETTE.limestoneSoffit,
-        roughness: 0.85,
+        roughness: 0.84,
+        roughnessMap: stoneRoughnessTexture ?? undefined,
         metalness: 0.02,
         transparent: true,
         opacity: Math.min(1.0, fVoid * 1.2),
       }),
-    [isDark, fVoid]
+    [isDark, fVoid, stoneRoughnessTexture]
   );
 
   // Subtle 14mm expansion joint reveals
@@ -204,71 +272,79 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#423B33" : REAL_ESTATE_PALETTE.limestoneParapet,
-        roughness: 0.72,
+        roughness: 0.70,
+        roughnessMap: stoneRoughnessTexture ?? undefined,
         metalness: 0.03,
         transparent: true,
         opacity: Math.min(1.0, fCantilever * 1.2),
       }),
-    [isDark, fCantilever]
+    [isDark, fCantilever, stoneRoughnessTexture]
   );
 
-  // 2. Architectural Bronze Metalwork (Deep bronze/charcoal, NOT pure black)
+  // 2. Architectural Bronze Metalwork with Restrained Satin Grain
   const bronzeMat = React.useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: isDark ? "#1E1813" : REAL_ESTATE_PALETTE.bronzeDark,
-        roughness: 0.44,
-        metalness: 0.48,
+        roughness: 0.42,
+        roughnessMap: bronzeRoughnessTexture ?? undefined,
+        metalness: 0.46,
         transparent: true,
         opacity: Math.min(1.0, fVoid * 1.5),
       }),
-    [isDark, fVoid]
+    [isDark, fVoid, bronzeRoughnessTexture]
   );
 
   const bronzeSatinMat = React.useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: isDark ? "#282018" : REAL_ESTATE_PALETTE.bronzeSatin,
-        roughness: 0.45,
-        metalness: 0.42,
+        color: isDark ? "#2A221A" : REAL_ESTATE_PALETTE.bronzeSatin,
+        roughness: 0.44,
+        roughnessMap: bronzeRoughnessTexture ?? undefined,
+        metalness: 0.40,
         transparent: true,
         opacity: Math.min(1.0, fVoid * 1.5),
       }),
-    [isDark, fVoid]
+    [isDark, fVoid, bronzeRoughnessTexture]
   );
 
   // 3. Physically Based Architectural Low-Iron Glazing (MeshPhysicalMaterial)
-  // Physical thickness (0.18), transmission (0.93), realistic IOR (1.51), roughness (0.065), metalness 0, Fresnel & envMap
+  // Physical thickness (0.032m / 32mm IGU), transmission (0.95), standard IOR (1.52), clean low roughness (0.028),
+  // natural Fresnel edge reflection, subtle sky environment response, full interior visibility
   const glassMat = React.useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: isDark ? "#8DA4B6" : "#EAF2F6",
-        transmission: 0.93 * fGlazing,
-        ior: 1.51,
-        roughness: 0.065,
+        color: isDark ? "#9CB2C2" : "#F4F8FA",
+        transmission: 0.95 * fGlazing,
+        ior: 1.52,
+        roughness: 0.028,
         metalness: 0.0,
-        thickness: 0.18,
-        attenuationColor: isDark ? "#A2BACB" : "#D6E8F2",
-        attenuationDistance: 0.9,
-        specularIntensity: 0.95,
+        thickness: 0.032,
+        attenuationColor: isDark ? "#B0C5D4" : "#EEF5F8",
+        attenuationDistance: 1.8,
+        specularIntensity: 0.98,
         envMap: skyReflectionTexture ?? undefined,
-        envMapIntensity: 0.88,
+        envMapIntensity: 0.48,
         transparent: true,
-        opacity: Math.min(1.0, fGlazing * 1.05),
+        opacity: Math.min(1.0, fGlazing * 1.02),
         depthWrite: false,
       }),
     [isDark, fGlazing, skyReflectionTexture]
   );
 
-  // 4. Interior Architectural Room Depth & Warm 2800K Radiance (Real occupied ambiance)
+  // 4. Subtle Interior Architectural Ambiance (Refined 2800K occupancy, NO flat orange glowing plane)
   const interiorGlowMat = React.useMemo(
     () =>
-      new THREE.MeshBasicMaterial({
-        color: isDark ? "#FFB060" : REAL_ESTATE_PALETTE.interiorAmber,
+      new THREE.MeshStandardMaterial({
+        color: isDark ? "#3A2E22" : "#D4C4B0",
+        roughness: 0.80,
+        metalness: 0.02,
+        emissive: isDark ? "#483218" : "#6E4C24",
+        emissiveIntensity: 0.16 * fGlazing,
         transparent: true,
-        opacity: (0.38 + 0.22 * fFinal) * fGlazing,
+        opacity: Math.min(1.0, fGlazing * 0.95),
       }),
-    [isDark, fFinal, fGlazing]
+    [isDark, fGlazing]
   );
 
   const interiorPartitionMat = React.useMemo(
@@ -506,9 +582,9 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
           {/* Subtle Warm Interior Architectural Light (Ground Floor Entry) */}
           <pointLight
             position={[0.60, pilotisHeight / 2 + 0.08, -0.45]}
-            intensity={0.80 * fGlazing}
-            distance={3.0}
-            color="#FFCA88"
+            intensity={0.42 * fGlazing}
+            distance={2.8}
+            color="#FFE6C7"
             decay={2}
           />
 
