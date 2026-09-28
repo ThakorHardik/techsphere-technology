@@ -944,38 +944,46 @@ function SystemNodeItem({
           beadMatRef.current.opacity = beadMatRef.current.opacity * (1 - n7Ease);
           nucleusMatRef.current.opacity = nucleusMatRef.current.opacity * (1 - n7Ease);
         } else if (index === 7) {
-          // Phase 1 (p in [9.00, 9.14]): Node 08 stays at canonical coordinates and transforms into architectural marker (1.05 -> 0.40)
-          // Phase 2 & 3 (p in [9.14, 9.75]): Node 08 travels along property datum into entrance interface totem [0.85, -0.22, -2.15]
-          if (p <= 9.14) {
-            groupRef.current.position.set(position[0], position[1], position[2]);
-            const morphT = (p - 9.00) / (9.14 - 9.00);
+          // Node 08 acts as the stationary spatial origin datum for Section 03
+          // Remains anchored at canonical coordinate [-0.04, 0.90, -1.70], projecting the datum line
+          groupRef.current.position.set(position[0], position[1], position[2]);
+
+          if (p <= 9.15) {
+            const morphT = (p - 9.00) / (9.15 - 9.00);
             const morphEase = morphT * morphT * (3 - 2 * morphT);
-            const targetS = THREE.MathUtils.lerp(1.05, 0.40, morphEase);
+            const targetS = THREE.MathUtils.lerp(1.05, 0.82, morphEase);
             beadMeshRef.current?.scale.set(targetS, targetS, targetS);
             if (beadMatRef.current) {
-              beadMatRef.current.roughness = THREE.MathUtils.lerp(0.35, 0.22, morphEase);
-              beadMatRef.current.metalness = THREE.MathUtils.lerp(0.18, 0.40, morphEase);
+              beadMatRef.current.opacity = 1.0;
+              beadMatRef.current.roughness = THREE.MathUtils.lerp(0.35, 0.20, morphEase);
+              beadMatRef.current.metalness = THREE.MathUtils.lerp(0.18, 0.45, morphEase);
             }
           } else {
-            const travelT = Math.min(1.0, (p - 9.14) / (9.75 - 9.14));
-            const travelEase = travelT * travelT * (3 - 2 * travelT);
+            // Graceful fade-out as architectural monolith and foundation solidify (p in [9.15, 9.36])
+            const fadeOutT = Math.min(1.0, (p - 9.15) / (9.36 - 9.15));
+            const fadeEase = fadeOutT * fadeOutT * (3 - 2 * fadeOutT);
+            const nodeOpacity = Math.max(0, 1.0 - fadeEase);
+            const targetS = THREE.MathUtils.lerp(0.82, 0.001, fadeEase);
+            beadMeshRef.current?.scale.set(targetS, targetS, targetS);
 
-            const posX = THREE.MathUtils.lerp(position[0], 0.85, travelEase);
-            const posY = THREE.MathUtils.lerp(position[1], -0.22, travelEase);
-            const posZ = THREE.MathUtils.lerp(position[2], -2.15, travelEase);
-            groupRef.current.position.set(posX, posY, posZ);
-
-            beadMeshRef.current?.scale.set(0.40, 0.40, 0.40);
             if (beadMatRef.current) {
-              beadMatRef.current.opacity = THREE.MathUtils.lerp(1.0, 0.92, travelEase);
-              beadMatRef.current.roughness = 0.22;
-              beadMatRef.current.metalness = 0.40;
+              beadMatRef.current.opacity = nodeOpacity;
+            }
+            if (nucleusMatRef.current) {
+              nucleusMatRef.current.opacity = nodeOpacity;
+            }
+            if (groupRef.current) {
+              groupRef.current.visible = nodeOpacity > 0.005;
             }
           }
         }
       } else if (index === 7) {
-        // Deterministic reverse scroll restoration: always restore exact canonical coordinates and scale
+        // Deterministic reverse scroll restoration: always restore exact canonical coordinates, scale, and visibility
         groupRef.current.position.set(position[0], position[1], position[2]);
+        groupRef.current.visible = true;
+        beadMeshRef.current?.scale.set(1.05, 1.05, 1.05);
+        if (beadMatRef.current) beadMatRef.current.opacity = 1.0;
+        if (nucleusMatRef.current) nucleusMatRef.current.opacity = 1.0;
       }
     } else {
       // Interactive mode

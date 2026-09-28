@@ -38,6 +38,7 @@ export function TechnologySystemPath({
 }: TechnologySystemPathProps) {
   const isDark = theme === "dark";
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
 
   // Shared deterministic open curve constructed from the 8 node coordinates
   const curve = useMemo(() => createSystemPathCurve(), []);
@@ -87,6 +88,10 @@ export function TechnologySystemPath({
       : typeof progress === "number"
       ? progress
       : 0;
+
+    if (p < 9.40 && meshRef.current && !meshRef.current.visible) {
+      meshRef.current.visible = true;
+    }
 
     // Timeline:
     // 0.00–0.16: Node 01 formation & completion — path unextended (drawRange = 0)
@@ -250,19 +255,20 @@ export function TechnologySystemPath({
           // 0.00–0.15: Complete system hold
           geom.setDrawRange(0, totalIndices);
           materialRef.current.opacity = 0.80;
-        } else if (t < 0.60) {
-          // 0.15–0.60: Corridor contracts decisively toward Node 08, retiring earlier segments
-          const contractT = (t - 0.15) / (0.60 - 0.15);
+        } else if (t < 0.40) {
+          // 0.15–0.40: Corridor contracts decisively toward Node 08, retiring earlier segments
+          const contractT = (t - 0.15) / (0.40 - 0.15);
           const ease = contractT * contractT * (3 - 2 * contractT);
-          const startSeg = Math.floor(THREE.MathUtils.lerp(0, 268, ease));
+          const startSeg = Math.floor(THREE.MathUtils.lerp(0, 279, ease));
           const startIndex = startSeg * indicesPerSegment;
           geom.setDrawRange(startIndex, totalIndices - startIndex);
-          materialRef.current.opacity = THREE.MathUtils.lerp(0.80, 0.32, ease);
+          materialRef.current.opacity = THREE.MathUtils.lerp(0.80, 0.10, ease);
+          if (meshRef.current) meshRef.current.visible = true;
         } else {
-          // 0.60–1.00: Stable, quiet, refined filament leading directly into Node 08 anchor
-          const startIndex = 268 * indicesPerSegment;
-          geom.setDrawRange(startIndex, totalIndices - startIndex);
-          materialRef.current.opacity = 0.32;
+          // 0.40–1.00 (p >= 9.40): Corridor completely dissolves as architectural datum & structure take over
+          geom.setDrawRange(0, 0);
+          materialRef.current.opacity = 0;
+          if (meshRef.current) meshRef.current.visible = false;
         }
       }
     }
@@ -271,7 +277,7 @@ export function TechnologySystemPath({
   return (
     <group name="technology-system-path">
       {/* Tangible Architectural Path */}
-      <mesh geometry={pathGeometry} castShadow receiveShadow>
+      <mesh ref={meshRef} geometry={pathGeometry} castShadow receiveShadow>
         <meshStandardMaterial
           ref={materialRef}
           vertexColors={true}

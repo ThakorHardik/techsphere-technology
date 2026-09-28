@@ -1860,57 +1860,57 @@ export function TechnologySolutions() {
         <div
           ref={industriesWrapRef}
           style={{ opacity: 0 }}
-          className="absolute inset-0 size-full z-20 flex items-center pointer-events-none"
+          className="absolute inset-0 size-full z-20 flex items-start lg:items-center pointer-events-none"
         >
-          <div className="w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 flex flex-col lg:grid lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-start lg:items-center min-h-[72vh] pt-20 sm:pt-24 lg:pt-0">
-            {/* Left Editorial Safe-Zone (~42%, Desktop lg:col-span-5) */}
-            <div className="contents lg:block lg:col-span-5 text-left pointer-events-none max-w-xl relative">
-              {/* Section Numeral / Subtitle (Mobile order-1) */}
+          <div className="w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-12 items-start lg:items-center min-h-full lg:min-h-[72vh] pt-20 sm:pt-24 lg:pt-0">
+            {/* Left Editorial Safe-Zone (~42%, Desktop lg:col-span-5, Mobile Zone 1) */}
+            <div className="flex flex-col lg:block lg:col-span-5 text-left pointer-events-none max-w-xl relative w-full z-10">
+              {/* Section Numeral / Subtitle */}
               <div
                 ref={industriesLabelRef}
                 style={{ opacity: 0 }}
-                className="order-1 will-change-transform mb-2.5 sm:mb-4"
+                className="will-change-transform mb-1.5 sm:mb-2.5 lg:mb-4"
               >
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <span className="font-mono text-xs sm:text-sm font-semibold tracking-widest text-[#B88E68] uppercase">
+                <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3">
+                  <span className="font-mono text-[11px] sm:text-xs lg:text-sm font-semibold tracking-widest text-[#B88E68] uppercase">
                     03 // 06
                   </span>
-                  <span className="h-px w-6 sm:w-8 bg-[#B88E68]/40" />
-                  <span className="font-mono text-[10px] sm:text-[11px] tracking-widest text-[#7A6B5D] uppercase">
+                  <span className="h-px w-5 sm:w-6 lg:w-8 bg-[#B88E68]/40" />
+                  <span className="font-mono text-[9.5px] sm:text-[10px] lg:text-[11px] tracking-widest text-[#7A6B5D] uppercase">
                     INDUSTRIES WE SERVE
                   </span>
                 </div>
               </div>
 
-              {/* Editorial Title (Mobile order-2) */}
+              {/* Editorial Title */}
               <h2
                 ref={industriesTitleRef}
                 id="industry-01-title"
                 style={{ opacity: 0 }}
-                className="order-2 text-2xl sm:text-3xl md:text-4xl lg:text-[3.25rem] font-semibold uppercase tracking-tight text-[#35261A] leading-[1.0] lg:leading-[0.96] will-change-transform mb-3 sm:mb-5"
+                className="text-[1.55rem] sm:text-2xl md:text-3xl lg:text-[3.25rem] font-semibold uppercase tracking-tight text-[#35261A] leading-[1.02] lg:leading-[0.96] will-change-transform mb-2.5 sm:mb-3 lg:mb-5"
               >
                 REAL ESTATE &amp; <br className="hidden sm:inline" />
                 PROPERTY TECH
               </h2>
 
-              {/* Vertical / Horizontal Industry Directory (01 Real Estate active, 02–06 restrained) */}
+              {/* Industry Directory Pills (Mobile wrapped naturally & compact, desktop standard) */}
               <div
                 ref={industriesNavRef}
                 style={{ opacity: 0 }}
-                className="hidden lg:block will-change-transform mb-4 sm:mb-6"
+                className="block will-change-transform mb-2.5 sm:mb-3.5 lg:mb-6"
               >
-                <div className="flex flex-wrap gap-2 sm:gap-2.5 font-mono text-[10.5px] sm:text-xs uppercase tracking-wider">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 lg:gap-2.5 font-mono text-[9.5px] sm:text-[10.5px] lg:text-xs uppercase tracking-wider">
                   {INDUSTRIES.map((ind) => (
                     <span
                       key={ind.id}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors ${
+                      className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border transition-colors ${
                         ind.active
                           ? "bg-[#35261A] text-[#FFF6ED] border-[#35261A] font-semibold shadow-sm"
                           : "bg-transparent text-[#7A6B5D]/60 border-[#7A6B5D]/20 font-normal"
                       }`}
                     >
                       <span
-                        className={`size-1.5 rounded-full ${
+                        className={`size-1 sm:size-1.5 rounded-full ${
                           ind.active ? "bg-[#B88E68]" : "bg-[#7A6B5D]/40"
                         }`}
                       />
@@ -1922,20 +1922,20 @@ export function TechnologySolutions() {
                 </div>
               </div>
 
-              {/* Active Industry Narrative & CTA (Mobile order-3 & order-6) */}
+              {/* Active Industry Narrative & CTA */}
               <div
                 ref={industriesContentRef}
                 style={{ opacity: 0 }}
-                className="contents lg:block will-change-transform"
+                className="block will-change-transform"
               >
                 <p
                   id="industry-01-description"
-                  className="order-3 text-xs sm:text-sm lg:text-base text-[#5C4A38] leading-[1.65] sm:leading-relaxed font-normal will-change-transform mb-4 sm:mb-6 select-text max-w-md"
+                  className="text-[12.5px] sm:text-sm lg:text-base text-[#5C4A38] leading-[1.55] sm:leading-relaxed font-normal will-change-transform mb-3 sm:mb-3.5 lg:mb-6 select-text max-w-md"
                 >
                   {INDUSTRIES[0].description}
                 </p>
 
-                <div className="order-3 flex items-center pt-1 sm:pt-2 mb-3 lg:mb-0">
+                <div className="flex items-center pt-0.5 sm:pt-1 lg:pt-2 mb-2 lg:mb-0">
                   <a
                     id="industry-01-cta"
                     href="#contact"
@@ -1948,14 +1948,14 @@ export function TechnologySolutions() {
               </div>
             </div>
 
-            {/* Right ~58% Spatial Physical Environment (Desktop lg:col-span-7, Mobile order-4 & order-5) */}
+            {/* Right ~58% Spatial Physical Environment (Desktop lg:col-span-7) */}
             <div className="contents lg:block lg:col-span-7 relative pointer-events-none">
               <div className="contents lg:flex lg:flex-col lg:justify-center lg:items-end w-full relative">
-                {/* 3D Architectural Spatial Viewport (Clean transparent window to persistent 3D Canvas, zero clutter) */}
+                {/* 3D Architectural Spatial Viewport */}
                 <div
                   ref={industriesPhotoCardRef}
                   style={{ opacity: 0 }}
-                  className="order-4 relative w-full h-[32vh] sm:h-[40vh] lg:h-[62vh] max-h-[620px] will-change-transform pointer-events-none"
+                  className="hidden lg:block relative w-full lg:h-[62vh] max-h-[620px] will-change-transform pointer-events-none"
                 />
 
                 {/* Quiet structural ref preserving GSAP hook without visual clutter */}

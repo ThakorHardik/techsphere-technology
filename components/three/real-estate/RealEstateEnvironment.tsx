@@ -7,65 +7,58 @@ import { useFrame } from "@react-three/fiber";
 import {
   ARCHITECTURAL_SCALE,
   RealEstateEnvironmentProps,
-  ConstructionPhases,
-  computeConstructionPhases,
+  ArchitecturalRevealPhases,
+  computeArchitecturalPhases,
 } from "./types";
-import { RealEstateBuilding } from "./RealEstateBuilding";
+import { RealEstateStructure } from "./RealEstateStructure";
 import { RealEstateScreens } from "./RealEstateScreens";
-import { RealEstateFacade } from "./RealEstateFacade";
-import { RealEstateBalconies } from "./RealEstateBalconies";
-import { RealEstateStorefront } from "./RealEstateStorefront";
-import { RealEstateStreetscape } from "./RealEstateStreetscape";
-import { RealEstateVegetation } from "./RealEstateVegetation";
-import { RealEstateBridge } from "./RealEstateBridge";
+import { RealEstateDatum } from "./RealEstateDatum";
 
 /**
- * RealEstateEnvironment — Master 3D Architectural Scene for Section 03 (Phase A)
+ * RealEstateEnvironment — Master 3D Architectural Scene for Section 03 (Real Estate v3)
  * 
  * Embeds directly inside the existing persistent TechnologySystemScene Canvas:
- * - Exactly 2 homepage Canvases (zero remounts, zero duplicate WebGL contexts)
- * - 100% idle/invisible for Nodes 01-08 (p < 9.10), consuming zero GPU render time
- * - Progressively constructs across 10 physical phases from p = 9.15 to p = 9.95:
- *   Phase 1 (9.00–9.15): Node 08 final overview hold
- *   Phase 2 (9.15–9.25): Foundation plinth forms beneath/behind Node 08
- *   Phase 3 (9.25–9.35): Ground floor pilotis & concrete core rise
- *   Phase 4 (9.35–9.50): Upper floors L2–L5 stack upward sequentially
- *   Phase 5 (9.50–9.60): Balconies and slabs resolve
- *   Phase 6 (9.60–9.68): Glazing panels slide into mullions
- *   Phase 7 (9.68–9.75): Vertical timber facade screens resolve
- *   Phase 8 (9.75–9.82): Ground-floor commercial frontage resolves
- *   Phase 9 (9.82–9.88): Minimal landscaping and plaza resolve
- *   Phase 10 (9.88–9.95): Entire architectural environment settles
- *   Handoff (9.95–10.00): Subtle technology handoff dot emerges along continuation trajectory
+ * - Exactly 2 homepage Canvases (zero duplicate WebGL contexts, zero remounts)
+ * - 100% idle/invisible for Nodes 01–08 (p < 8.95), consuming zero GPU render time
+ * - High-precision architectural daylight illumination with true shadow mapping & chiaroscuro
+ * - Houses the monolithic limestone mass, deep void, cantilevered slabs, and timber louvers
+ * - Smooth architectural reveal driven deterministically across p in [9.00, 10.00]
  */
 export function RealEstateEnvironment({
   progressRef,
   progress: externalProgress,
   isDark = false,
+  isMobile = false,
 }: RealEstateEnvironmentProps) {
   const masterGroupRef = useRef<THREE.Group>(null);
   const buildingGroupRef = useRef<THREE.Group>(null);
   const lastPRef = useRef<number>(-1);
   const isVisibleRef = useRef<boolean>(false);
 
-  const [phases, setPhases] = useState<ConstructionPhases>(() => computeConstructionPhases(0));
+  const [phases, setPhases] = useState<ArchitecturalRevealPhases>(() => computeArchitecturalPhases(0));
 
-  const { buildingPos, buildingRotationY } = ARCHITECTURAL_SCALE;
+  const { buildingPos: desktopBuildingPos, buildingRotationY } = ARCHITECTURAL_SCALE;
+  const currentBuildingPos: [number, number, number] = isMobile
+    ? [-0.04, -1.08, -2.85]
+    : [desktopBuildingPos[0], desktopBuildingPos[1], desktopBuildingPos[2]];
+  const currentScale = isMobile ? 0.72 : 0.92;
 
-  // Set master scale once on mount — it never changes
+  // Master scale calibrated so building has substantial architectural weight
+  // On desktop: X: 44-93%, Y: 24-78%
+  // On mobile: Zone 2 lower band (Y: 52-88%), strictly below editorial copy
   useEffect(() => {
     if (masterGroupRef.current) {
-      masterGroupRef.current.scale.set(0.80, 0.80, 0.80);
+      masterGroupRef.current.scale.set(currentScale, currentScale, currentScale);
     }
-  }, []);
+  }, [currentScale]);
 
   useFrame(() => {
     if (!masterGroupRef.current) return;
 
     const p = progressRef ? progressRef.current : typeof externalProgress === "number" ? externalProgress : 0;
 
-    // Strict performance optimization: invisible when viewing Nodes 01 through 08 corridor
-    if (p < 9.10) {
+    // Strict performance optimization: completely invisible during Nodes 01–08 corridor
+    if (p < 8.25) {
       if (isVisibleRef.current) {
         masterGroupRef.current.visible = false;
         isVisibleRef.current = false;
@@ -80,56 +73,78 @@ export function RealEstateEnvironment({
 
     // Update phases state with minimum delta threshold to prevent unnecessary re-renders
     const delta = Math.abs(p - lastPRef.current);
-    if (delta >= 0.003 || (p >= 9.95 && lastPRef.current < 9.95)) {
+    if (delta >= 0.002 || (p >= 9.95 && lastPRef.current < 9.95)) {
       lastPRef.current = p;
-      setPhases(computeConstructionPhases(p));
+      setPhases(computeArchitecturalPhases(p));
     }
 
-    // Subtle vertical settling: building rises 3cm into final ground position
+    // Subtle architectural grounding: structure settles gently into final rock-solid rest
     if (buildingGroupRef.current) {
-      const ph = computeConstructionPhases(p);
-      const settleEase = ph.streetscape;
-      const ySettle = THREE.MathUtils.lerp(buildingPos[1] - 0.03, buildingPos[1], settleEase);
-      buildingGroupRef.current.position.set(buildingPos[0], ySettle, buildingPos[2]);
+      const ph = computeArchitecturalPhases(p);
+      const settleEase = ph.ground;
+      const ySettle = THREE.MathUtils.lerp(currentBuildingPos[1] - 0.02, currentBuildingPos[1], settleEase);
+      buildingGroupRef.current.position.set(currentBuildingPos[0], ySettle, currentBuildingPos[2]);
     }
   });
 
   return (
     <group ref={masterGroupRef} name="real-estate-3d-environment" visible={false}>
-      {/* Main Architectural Building Complex */}
+      {/* ─────────────────────────────────────────────────────────────
+          ARCHITECTURAL DAYLIGHTING RIG WITH SHADOW MAPPING
+          Dominant warm key sun + cool atmospheric skylight + warm bounce
+          ───────────────────────────────────────────────────────────── */}
+      {/* 1. Key Sun: High-intensity raking light casting crisp diagonal architectural shadows */}
+      <directionalLight
+        position={[-5.4, 6.2, 4.2]}
+        intensity={isDark ? 2.4 : 3.1}
+        color={isDark ? "#FFF4E8" : "#FFF8EE"}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={0.5}
+        shadow-camera-far={25}
+        shadow-camera-left={-3.8}
+        shadow-camera-right={3.8}
+        shadow-camera-top={3.8}
+        shadow-camera-bottom={-3.8}
+        shadow-bias={-0.0004}
+        shadow-radius={1.5}
+      />
+
+      {/* 2. Atmospheric Sky Fill: Soft neutral daylight keeping deep recesses luminous without flattening */}
+      <ambientLight
+        intensity={isDark ? 0.16 : 0.22}
+        color={isDark ? "#8C98A2" : "#D8DFE4"}
+      />
+
+      {/* 3. Ground Bounce Light: Warm floor reflection softly revealing stone slab soffits */}
+      <directionalLight
+        position={[0.5, -4.0, 1.0]}
+        intensity={0.15}
+        color={isDark ? "#2A2016" : "#483B2C"}
+      />
+
+      {/* ─────────────────────────────────────────────────────────────
+          ARCHITECTURAL STRUCTURE & SELECTIVE TIMBER SCREEN
+          Positioned firmly on right side of desktop viewport (X >= 46%)
+          ───────────────────────────────────────────────────────────── */}
       <group
         ref={buildingGroupRef}
-        position={buildingPos}
+        position={currentBuildingPos}
         rotation={[0, buildingRotationY, 0]}
       >
-        {/* 1. Structural Concrete Foundation, Core, Columns & Sequential Slabs */}
-        <RealEstateBuilding isDark={isDark} phases={phases} />
+        {/* Monolithic Limestone Mass, Deep Two-Story Void, Slabs & Glazing */}
+        <RealEstateStructure isDark={isDark} phases={phases} />
 
-        {/* 2. Instanced Warm Timber Louver Facade Panels (Phase 7) */}
+        {/* Selective Natural Architectural Teak Timber Louver Screen */}
         <RealEstateScreens isDark={isDark} phases={phases} />
-
-        {/* 3. Glass Curtain Walls, Window Mullions & Interior Depth (Phase 6) */}
-        <RealEstateFacade isDark={isDark} phases={phases} />
-
-        {/* 4. Cantilevered Balconies, Glass Railings & Planters (Phase 5) */}
-        <RealEstateBalconies isDark={isDark} phases={phases} />
-
-        {/* 5. Ground Floor Commercial Storefront, Café & Signage (Phase 8) */}
-        <RealEstateStorefront isDark={isDark} phases={phases} />
-
-        {/* 6. Confined Sidewalk Plaza, Curb & Street Context (Phase 9) */}
-        <RealEstateStreetscape isDark={isDark} phases={phases} />
-
-        {/* 7. Refined Sidewalk Trees, Foliage & Landscaping (Phase 9) */}
-        <RealEstateVegetation isDark={isDark} phases={phases} />
       </group>
 
-      {/* 8. Intentional Node 08 Physical Bridge Conduit & Continuation Handoff Dot */}
-      <RealEstateBridge
-        progressRef={progressRef}
-        progress={externalProgress}
-        phases={phases}
-      />
+      {/* ─────────────────────────────────────────────────────────────
+          RESTRAINED ARCHITECTURAL STRUCTURAL AXIS
+          Subtle warm-bronze alignment datum linking Node 08 to the site
+          ───────────────────────────────────────────────────────────── */}
+      <RealEstateDatum isDark={isDark} phases={phases} />
     </group>
   );
 }

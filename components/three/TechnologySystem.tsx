@@ -47,6 +47,13 @@ export function TechnologySystem({
     } else {
       masterGroupRef.current.rotation.set(0, 0, 0);
     }
+
+    // Natural handoff: Technology corridor hands off as site discovery begins (p >= 8.75)
+    if (p >= 8.75) {
+      if (masterGroupRef.current.visible) masterGroupRef.current.visible = false;
+    } else {
+      if (!masterGroupRef.current.visible) masterGroupRef.current.visible = true;
+    }
   });
 
   return (

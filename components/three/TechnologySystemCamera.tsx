@@ -315,46 +315,89 @@ export function TechnologySystemCamera({
     ? new THREE.Vector3(-0.40, 0.22, -0.10)
     : new THREE.Vector3(-0.55, 0.18, -0.10);
 
-  // 13. Stage 13: Section 03 Industries Phase A — Continuous Architectural Film (p = 9.00 – 10.00)
-  // Phase 1 (p = 9.00 - 9.12): Approach Node 08 naturally as it transforms into an architectural marker
-  const camPosApproachNode08 = isMobile
-    ? new THREE.Vector3(0.00, 1.15, 3.80)
+  // 13. Stage 13: Section 03 Industries Phase A — Cinematic Architectural Approach (p in [8.20, 10.00])
+  // Waypoint 1 (p = 8.45 / Departure): Camera leaves Node 08 along datum trajectory
+  const camPosDeparture = isMobile
+    ? new THREE.Vector3(0.05, 1.05, 2.40)
     : isTablet
-    ? new THREE.Vector3(0.10, 0.90, 3.10)
-    : new THREE.Vector3(0.15, 0.88, 2.60);
+    ? new THREE.Vector3(0.35, 1.05, 1.80)
+    : new THREE.Vector3(0.50, 1.15, 1.60);
 
-  const camLookApproachNode08 = isMobile
-    ? new THREE.Vector3(-0.04, 0.95, -1.70)
+  const camLookDeparture = isMobile
+    ? new THREE.Vector3(-0.02, 0.90, -1.80)
     : isTablet
-    ? new THREE.Vector3(-0.04, 0.90, -1.70)
-    : new THREE.Vector3(-0.04, 0.90, -1.70);
+    ? new THREE.Vector3(-0.10, 0.65, -2.10)
+    : new THREE.Vector3(-0.15, 0.75, -2.00);
 
-  // Phase 2 (p = 9.12 - 9.28): Enter property & descend toward foundation plinth
-  const camPosFoundation = isMobile
-    ? new THREE.Vector3(1.20, -0.65, 4.20)
+  // Waypoint 2 (p = 8.75 / Site Discovery): Architecture begins appearing from distance with negative space
+  const camPosSiteDiscovery = isMobile
+    ? new THREE.Vector3(0.40, 0.85, 6.20)
     : isTablet
-    ? new THREE.Vector3(-0.45, 0.32, 3.40)
-    : new THREE.Vector3(-0.65, 0.22, 2.95);
+    ? new THREE.Vector3(0.65, 0.95, 6.00)
+    : new THREE.Vector3(0.95, 1.15, 6.40);
 
-  const camLookFoundation = isMobile
-    ? new THREE.Vector3(1.35, 0.80, -2.60)
+  const camLookSiteDiscovery = isMobile
+    ? new THREE.Vector3(0.35, 0.20, -2.50)
     : isTablet
-    ? new THREE.Vector3(0.55, -0.10, -2.60)
-    : new THREE.Vector3(0.45, -0.15, -2.60);
+    ? new THREE.Vector3(0.55, 0.35, -2.85)
+    : new THREE.Vector3(0.55, 0.55, -2.85);
 
-  // Phase 5 (p >= 9.75): Final Real Estate 3/4 elevated perspective
-  // Calibrated so left 42% of viewport is 100% clean typography safe zone and building is anchored in right 58% (X: 46% - 96%)
+  // Waypoint 3 (p = 9.10 / Lateral Approach): Diagonally around architecture in front-right 3/4
+  const camPosLateralApproach = isMobile
+    ? new THREE.Vector3(0.35, 0.50, 5.50)
+    : isTablet
+    ? new THREE.Vector3(0.50, 0.85, 5.30)
+    : new THREE.Vector3(0.80, 1.05, 5.50);
+
+  const camLookLateralApproach = isMobile
+    ? new THREE.Vector3(0.35, 0.30, -2.50)
+    : isTablet
+    ? new THREE.Vector3(0.52, 0.40, -2.85)
+    : new THREE.Vector3(0.52, 0.65, -2.85);
+
+  // Waypoint 4 (p = 9.45 / Architectural Reveal): Closer approach, rich lateral parallax between monolith and glazed volume
+  const camPosArchReveal = isMobile
+    ? new THREE.Vector3(0.30, 0.15, 4.90)
+    : isTablet
+    ? new THREE.Vector3(0.05, 0.55, 4.80)
+    : new THREE.Vector3(0.25, 0.88, 4.90);
+
+  const camLookArchReveal = isMobile
+    ? new THREE.Vector3(0.35, 0.35, -2.50)
+    : isTablet
+    ? new THREE.Vector3(0.52, 0.40, -2.85)
+    : new THREE.Vector3(0.48, 0.68, -2.85);
+
+  // Waypoint 5 (p >= 9.70): Final Real Estate Architectural Perspective
+  // Composed around the ENTIRE building:
+  // - Occupies right side of composition
+  // - Clean breathing room above roof (no header crop), to the right edge, and below
+  // - Eye-level to natural human vantage point, strictly parallel verticals
   const industriesBridgePos = isMobile
-    ? new THREE.Vector3(1.55, -1.10, 4.60)
+    ? new THREE.Vector3(0.35, -0.65, 4.35)
     : isTablet
-    ? new THREE.Vector3(-0.65, 0.62, 3.80)
-    : new THREE.Vector3(-1.15, 0.60, 3.60);
+    ? new THREE.Vector3(-0.40, 0.14, 4.40)
+    : new THREE.Vector3(-0.55, 0.72, 4.30);
 
   const industriesBridgeLook = isMobile
-    ? new THREE.Vector3(1.55, 2.25, -2.85)
+    ? new THREE.Vector3(0.35, 0.40, -2.50)
     : isTablet
-    ? new THREE.Vector3(0.60, 0.20, -2.85)
-    : new THREE.Vector3(0.20, 0.15, -2.85);
+    ? new THREE.Vector3(0.60, 0.12, -2.85)
+    : new THREE.Vector3(0.52, 0.75, -2.85);
+
+  // Dedicated Mobile Stage 13 Waypoints (p in [8.45, 10.00])
+  // Calibrated for Zone 2: begins ~48%, finishes ~91%, intentional 7-9% breathing gap from CTA
+  const camPosSiteDiscoveryMobile = new THREE.Vector3(0.30, 0.75, 6.50);
+  const camLookSiteDiscoveryMobile = new THREE.Vector3(0.38, 0.75, -2.85);
+
+  const camPosLateralApproachMobile = new THREE.Vector3(0.42, 0.55, 5.70);
+  const camLookLateralApproachMobile = new THREE.Vector3(0.40, 0.70, -2.85);
+
+  const camPosArchRevealMobile = new THREE.Vector3(0.38, 0.45, 5.15);
+  const camLookArchRevealMobile = new THREE.Vector3(0.40, 0.65, -2.85);
+
+  const camPosHeroMobile = new THREE.Vector3(0.34, 0.38, 4.85);
+  const camLookHeroMobile = new THREE.Vector3(0.40, 0.62, -2.85);
 
   useFrame((state) => {
     if (reducedMotion || !interactive) {
@@ -591,52 +634,79 @@ export function TechnologySystemCamera({
         targetPos.copy(arrivalPosNode08);
         targetLook.copy(arrivalLookNode08);
       }
-    } else if (p <= 9.0) {
-      // Phase 2: Final Complete System Pull-Back (p in [8.00, 9.00])
-      const t = p - 8.0;
-      if (t <= 0.15) {
-        // 0.00–0.15 (p in [8.00, 8.15]): Complete reading hold & realization at Node 08 terminus
+    } else if (isMobile) {
+      // DEDICATED MOBILE ARCHITECTURAL TRAJECTORY (p in [8.00, 10.00])
+      // 8.00–8.45: Keep current Node 08 mobile composition unchanged
+      // 8.45–8.75: Camera begins transitioning toward property (building stays outside editorial zone)
+      // 8.75–9.20: Architecture emerges sooner into lower visual band
+      // 9.20–9.65: Architecture becomes larger and more legible
+      // 9.65–9.85: Settle into final mobile architectural hero framing
+      // 9.85–10.00: Stable final mobile Real Estate composition hold
+      if (p <= 8.45) {
         targetPos.copy(arrivalPosNode08);
         targetLook.copy(arrivalLookNode08);
-      } else if (t < 0.85) {
-        // 0.15–0.85 (p in [8.15, 8.85]): Physical camera retreat revealing full 8-node system
-        const retreatT = (t - 0.15) / (0.85 - 0.15);
-        const ease = retreatT * retreatT * (3 - 2 * retreatT);
-        targetPos.lerpVectors(arrivalPosNode08, systemOverviewPos, ease);
-        targetLook.lerpVectors(arrivalLookNode08, systemOverviewLook, ease);
+      } else if (p < 8.75) {
+        const u = (p - 8.45) / (8.75 - 8.45);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(arrivalPosNode08, camPosSiteDiscoveryMobile, ease);
+        targetLook.lerpVectors(arrivalLookNode08, camLookSiteDiscoveryMobile, ease);
+      } else if (p < 9.20) {
+        const u = (p - 8.75) / (9.20 - 8.75);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(camPosSiteDiscoveryMobile, camPosLateralApproachMobile, ease);
+        targetLook.lerpVectors(camLookSiteDiscoveryMobile, camLookLateralApproachMobile, ease);
+      } else if (p < 9.65) {
+        const u = (p - 9.20) / (9.65 - 9.20);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(camPosLateralApproachMobile, camPosArchRevealMobile, ease);
+        targetLook.lerpVectors(camLookLateralApproachMobile, camLookArchRevealMobile, ease);
+      } else if (p < 9.85) {
+        const u = (p - 9.65) / (9.85 - 9.65);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(camPosArchRevealMobile, camPosHeroMobile, ease);
+        targetLook.lerpVectors(camLookArchRevealMobile, camLookHeroMobile, ease);
       } else {
-        // 0.85–1.00 (p in [8.85, 9.00]): Complete 8-node system final hold
-        targetPos.copy(systemOverviewPos);
-        targetLook.copy(systemOverviewLook);
+        targetPos.copy(camPosHeroMobile);
+        targetLook.copy(camLookHeroMobile);
       }
     } else {
-      // Stage 13: Section 03 Industries Phase A — Continuous Architectural Film (p in [9.00, 10.00])
-      // Phase 1 (p in [9.00, 9.12]): Approach Node 08 naturally as it transforms into property marker
-      // Phase 2 (p in [9.12, 9.28]): Move toward building site & descend toward foundation plinth
-      // Phase 3 & 4 (p in [9.28, 9.75]): Travel forward through construction, rise with building height
-      // Phase 5 (p in [9.75, 10.00]): Settle into final 3/4 elevated perspective with rock-solid reading hold
-      const t = p - 9.0;
-      if (t <= 0.12) {
-        // Phase 1: Natural approach toward Node 08
-        const u = t / 0.12;
+      // DESKTOP & TABLET CINEMATIC TRAJECTORY (100% UNCHANGED)
+      // 8.00–8.20: NODE 08 READING HOLD (keep current Node 08 composition)
+      // 8.20–8.45: DEPARTURE (camera begins leaving Node 08 along datum)
+      // 8.45–8.75: SITE DISCOVERY (architecture begins appearing from distance)
+      // 8.75–9.10: LATERAL APPROACH (moves diagonally around architecture in front-right 3/4)
+      // 9.10–9.45: ARCHITECTURAL REVEAL (closer approach, rich lateral parallax)
+      // 9.45–9.88: HERO APPROACH (active approach shifting into 3/4 editorial angle)
+      // 9.88–10.00: FINAL HERO HOLD (settles into final stable composition)
+      if (p <= 8.20) {
+        targetPos.copy(arrivalPosNode08);
+        targetLook.copy(arrivalLookNode08);
+      } else if (p < 8.45) {
+        const u = (p - 8.20) / (8.45 - 8.20);
         const ease = u * u * (3 - 2 * u);
-        targetPos.lerpVectors(systemOverviewPos, camPosApproachNode08, ease);
-        targetLook.lerpVectors(systemOverviewLook, camLookApproachNode08, ease);
-      } else if (t < 0.28) {
-        // Phase 2: Enter property & descend toward foundation plinth
-        const u = (t - 0.12) / (0.28 - 0.12);
+        targetPos.lerpVectors(arrivalPosNode08, camPosDeparture, ease);
+        targetLook.lerpVectors(arrivalLookNode08, camLookDeparture, ease);
+      } else if (p < 8.75) {
+        const u = (p - 8.45) / (8.75 - 8.45);
         const ease = u * u * (3 - 2 * u);
-        targetPos.lerpVectors(camPosApproachNode08, camPosFoundation, ease);
-        targetLook.lerpVectors(camLookApproachNode08, camLookFoundation, ease);
-      } else if (t < 0.75) {
-        // Phase 3 & 4: Travel through construction & rise as building gains height
-        const u = (t - 0.28) / (0.75 - 0.28);
+        targetPos.lerpVectors(camPosDeparture, camPosSiteDiscovery, ease);
+        targetLook.lerpVectors(camLookDeparture, camLookSiteDiscovery, ease);
+      } else if (p < 9.10) {
+        const u = (p - 8.75) / (9.10 - 8.75);
         const ease = u * u * (3 - 2 * u);
-        targetPos.lerpVectors(camPosFoundation, industriesBridgePos, ease);
-        targetPos.y += 0.08 * Math.sin(ease * Math.PI); // subtle architectural rise tracking building growth
-        targetLook.lerpVectors(camLookFoundation, industriesBridgeLook, ease);
+        targetPos.lerpVectors(camPosSiteDiscovery, camPosLateralApproach, ease);
+        targetLook.lerpVectors(camLookSiteDiscovery, camLookLateralApproach, ease);
+      } else if (p < 9.45) {
+        const u = (p - 9.10) / (9.45 - 9.10);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(camPosLateralApproach, camPosArchReveal, ease);
+        targetLook.lerpVectors(camLookLateralApproach, camLookArchReveal, ease);
+      } else if (p < 9.95) {
+        const u = (p - 9.45) / (9.95 - 9.45);
+        const ease = u * u * (3 - 2 * u);
+        targetPos.lerpVectors(camPosArchReveal, industriesBridgePos, ease);
+        targetLook.lerpVectors(camLookArchReveal, industriesBridgeLook, ease);
       } else {
-        // Phase 5: Rock-solid settle into final Real Estate editorial framing
         targetPos.copy(industriesBridgePos);
         targetLook.copy(industriesBridgeLook);
       }

@@ -132,6 +132,72 @@ function getInitialStoryCameraPosition(
 }
 
 /**
+ * Dynamic Scene Lighting Controller
+ * Provides curated warm lighting for Nodes 01–08, and smoothly hands off to
+ * the dedicated architectural daylighting rig for Section 03 (p in [9.00, 9.35]).
+ */
+function SceneLighting({
+  isDark,
+  progressRef,
+  progress: externalProgress,
+}: {
+  isDark: boolean;
+  progressRef?: React.RefObject<number>;
+  progress?: number;
+}) {
+  const ambientRef = useRef<THREE.AmbientLight>(null);
+  const keyLightRef = useRef<THREE.DirectionalLight>(null);
+  const fillLightRef = useRef<THREE.DirectionalLight>(null);
+  const backLightRef = useRef<THREE.DirectionalLight>(null);
+
+  const baseAmbient = isDark ? 0.6 : 0.8;
+  const baseKey = isDark ? 1.35 : 1.2;
+  const baseFill = isDark ? 0.5 : 0.4;
+  const baseBack = 0.3;
+
+  useFrame(() => {
+    const p = progressRef ? progressRef.current : typeof externalProgress === "number" ? externalProgress : 0;
+    // When p in [9.00, 9.35], transition lighting to Section 03 architectural daylight
+    const fadeT = p <= 9.00 ? 0 : Math.min(1.0, (p - 9.00) / 0.35);
+    const ease = fadeT * fadeT * (3 - 2 * fadeT);
+    const mult = Math.max(0, 1.0 - 1.0 * ease);
+
+    if (ambientRef.current) ambientRef.current.intensity = baseAmbient * mult;
+    if (keyLightRef.current) keyLightRef.current.intensity = baseKey * mult;
+    if (fillLightRef.current) fillLightRef.current.intensity = baseFill * mult;
+    if (backLightRef.current) backLightRef.current.intensity = baseBack * mult;
+  });
+
+  return (
+    <>
+      <ambientLight
+        ref={ambientRef}
+        intensity={baseAmbient}
+        color={isDark ? TECH_SYSTEM_PALETTE.softCream : TECH_SYSTEM_PALETTE.warmCream}
+      />
+      <directionalLight
+        ref={keyLightRef}
+        position={[5, 8, 6]}
+        intensity={baseKey}
+        color="#FFFDF9"
+      />
+      <directionalLight
+        ref={fillLightRef}
+        position={[-5, 2, 4]}
+        intensity={baseFill}
+        color="#F6EDE3"
+      />
+      <directionalLight
+        ref={backLightRef}
+        position={[0, -4, -5]}
+        intensity={baseBack}
+        color={isDark ? "#FFF6ED" : "#4A3725"}
+      />
+    </>
+  );
+}
+
+/**
  * TechnologySystemScene — Reusable 3D Scene Wrapper.
  * 
  * Embeds the 3D Technology System inside a high-performance R3F Canvas.
@@ -205,6 +271,7 @@ export function TechnologySystemScene({
       <Canvas
         camera={{ position: initialCamPos, fov: cameraFov, near: 0.1, far: 100 }}
         dpr={[1, 2]}
+        shadows
         gl={{
           alpha: true,
           antialias: true,
@@ -213,32 +280,11 @@ export function TechnologySystemScene({
         frameloop="always"
         className="size-full"
       >
-        {/* Curated Warm Architectural Lighting Environment */}
-        <ambientLight
-          intensity={isDark ? 0.6 : 0.8}
-          color={isDark ? TECH_SYSTEM_PALETTE.softCream : TECH_SYSTEM_PALETTE.warmCream}
-        />
-
-        {/* Primary Warm Sun Key Light */}
-        <directionalLight
-          position={[5, 8, 6]}
-          intensity={isDark ? 1.35 : 1.2}
-          color="#FFFDF9"
-          castShadow
-        />
-
-        {/* Soft Warm Fill Light */}
-        <directionalLight
-          position={[-5, 2, 4]}
-          intensity={isDark ? 0.5 : 0.4}
-          color="#F6EDE3"
-        />
-
-        {/* Low Warm Silhouette Back Light */}
-        <directionalLight
-          position={[0, -4, -5]}
-          intensity={0.3}
-          color={isDark ? "#FFF6ED" : "#4A3725"}
+        {/* Curated Warm Architectural Lighting Environment with Section 03 Daylight Handoff */}
+        <SceneLighting
+          isDark={isDark}
+          progressRef={progressRef}
+          progress={progress}
         />
 
         {/* Continuous Scroll Camera Controller — always mounted in story mode or when progressRef exists */}
@@ -272,6 +318,7 @@ export function TechnologySystemScene({
           progressRef={progressRef}
           progress={progress}
           isDark={isDark}
+          isMobile={isMobile}
         />
       </Canvas>
     </div>
