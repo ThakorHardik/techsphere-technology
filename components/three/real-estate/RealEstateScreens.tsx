@@ -10,40 +10,24 @@ interface RealEstateScreensProps {
 }
 
 /**
- * RealEstateScreens — Deliberate Natural Architectural Timber Louvers
+ * RealEstateScreens — Slim Recessed Architectural Bronze Mullions
  * 
- * Provides tactile warmth and human scale against the limestone monolith:
- * - Exactly 5 deliberate, well-spaced vertical teak/walnut architectural fins
- * - Natural warm wood materiality with subtle matte diffuse finish (no repetitive orange bars)
- * - Clean architectural bronze guide tracks top and bottom
+ * Provides rhythmic architectural facade division and solar protection:
+ * - Slim architectural bronze sightlines (0.016m width, 0.036m depth)
+ * - Recessed safely behind slab edges into the glazing envelope
+ * - Warm satin bronze finish with subtle arris daylight specular catch
+ * - Replaces heavy black bars with refined, constructed architectural joinery
  */
 export function RealEstateScreens({ isDark = false, phases }: RealEstateScreensProps) {
-  const { podiumSlabY, roofSlabY } = ARCHITECTURAL_SCALE;
+  const { podiumSlabY, roofSlabY, roofSlabX } = ARCHITECTURAL_SCALE;
   const fScreen = phases ? phases.screen : 1.0;
 
-  // Natural roasted teak timber tones with subtle grain/roughness variation across individual slats
-  const timberMaterials = React.useMemo(() => {
-    const finTonesLight = ["#492B15", "#4E3019", "#452712", "#4B2D16"];
-    const finTonesDark = ["#331E0F", "#372212", "#2F1B0D", "#352010"];
-    const finRoughness = [0.68, 0.72, 0.70, 0.74];
-
-    return Array.from({ length: 4 }, (_, i) =>
-      new THREE.MeshStandardMaterial({
-        color: isDark ? finTonesDark[i] : finTonesLight[i],
-        roughness: finRoughness[i],
-        metalness: 0.02,
-        transparent: true,
-        opacity: Math.min(1.0, fScreen * 1.5),
-      })
-    );
-  }, [isDark, fScreen]);
-
-  // Material: Integrated Architectural Bronze Louver Tracks
-  const trackMat = React.useMemo(
+  // Warm Satin Bronze Material for Architectural Mullions
+  const bronzeMullionMat = React.useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: isDark ? "#1C1611" : REAL_ESTATE_PALETTE.timberTrack,
-        roughness: 0.42,
+        color: isDark ? "#2A221A" : REAL_ESTATE_PALETTE.bronzeSatin,
+        roughness: 0.40,
         metalness: 0.46,
         transparent: true,
         opacity: Math.min(1.0, fScreen * 1.5),
@@ -51,43 +35,53 @@ export function RealEstateScreens({ isDark = false, phases }: RealEstateScreensP
     [isDark, fScreen]
   );
 
-  // Louver screen dimensions (4 substantial architectural vertical solar fins)
-  const screenHeight = (roofSlabY - podiumSlabY) - 0.10;
+  // Soft Arris Highlight Material (Daylight specular reflection on mullion edges)
+  const bronzeHighlightMat = React.useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: isDark ? "#483B2E" : REAL_ESTATE_PALETTE.bronzeHighlight,
+        roughness: 0.32,
+        metalness: 0.54,
+        transparent: true,
+        opacity: Math.min(1.0, fScreen * 1.5),
+      }),
+    [isDark, fScreen]
+  );
+
+  const screenHeight = (roofSlabY - podiumSlabY) - 0.12;
   const screenY = (podiumSlabY + roofSlabY) / 2;
-  const louverWidth = 0.064;
-  const louverDepth = 0.12;
-  const count = 4;
-  const startX = 0.15;
-  const endX = 0.58;
-  const stepX = (endX - startX) / (count - 1);
+  const mullionWidth = 0.016;
+  const mullionDepth = 0.036;
+
+  // 3 Slim, elegant architectural bronze mullions spaced across the left bay of the gallery
+  // Leaves the center and right bay (sofa, side table, floor lamp) open and clearly visible
+  const mullionOffsets = [-0.62, -0.38, -0.14];
 
   if (fScreen <= 0.02) return null;
 
   return (
-    <group name="real-estate-timber-screens" position={[0, screenY, 0.44]}>
-      {/* Upper & Lower Integrated Architectural Bronze Guide Runners */}
-      <mesh position={[(startX + endX) / 2, screenHeight / 2 - 0.010, 0]} material={trackMat}>
-        <boxGeometry args={[endX - startX + 0.14, 0.022, louverDepth + 0.02]} />
+    <group name="real-estate-bronze-mullions" position={[roofSlabX, screenY, 0.025]}>
+      {/* Upper & Lower Recessed Bronze Guide Tracks */}
+      <mesh position={[-0.38, screenHeight / 2 - 0.006, 0]} material={bronzeMullionMat}>
+        <boxGeometry args={[0.58, 0.012, mullionDepth + 0.008]} />
       </mesh>
-      <mesh position={[(startX + endX) / 2, -screenHeight / 2 + 0.010, 0]} material={trackMat}>
-        <boxGeometry args={[endX - startX + 0.14, 0.022, louverDepth + 0.02]} />
+      <mesh position={[-0.38, -screenHeight / 2 + 0.006, 0]} material={bronzeMullionMat}>
+        <boxGeometry args={[0.58, 0.012, mullionDepth + 0.008]} />
       </mesh>
 
-      {/* 4 Substantial Architectural Timber Solar Fins with Natural Micro-Variation */}
-      {Array.from({ length: count }, (_, i) => {
-        const xPos = startX + i * stepX;
-        return (
-          <mesh
-            key={`louver-${i}`}
-            position={[xPos, 0, 0]}
-            material={timberMaterials[i]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[louverWidth, screenHeight - 0.020, louverDepth]} />
+      {/* Slim Recessed Architectural Bronze Mullions */}
+      {mullionOffsets.map((xPos, i) => (
+        <group key={`mullion-${i}`} position={[xPos, 0, 0]}>
+          {/* Main Mullion Profile */}
+          <mesh material={bronzeMullionMat} castShadow receiveShadow>
+            <boxGeometry args={[mullionWidth, screenHeight - 0.012, mullionDepth]} />
           </mesh>
-        );
-      })}
+          {/* Exposed Edge Specular Arris Catch */}
+          <mesh position={[0, 0, mullionDepth / 2 + 0.001]} material={bronzeHighlightMat}>
+            <boxGeometry args={[0.003, screenHeight - 0.014, 0.002]} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }

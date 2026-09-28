@@ -308,25 +308,29 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     [isDark, fVoid, bronzeRoughnessTexture]
   );
 
-  // 3. Physically Based Architectural Low-Iron Glazing (MeshPhysicalMaterial)
-  // Physical thickness (0.032m / 32mm IGU), transmission (0.95), standard IOR (1.52), clean low roughness (0.028),
-  // natural Fresnel edge reflection, subtle sky environment response, full interior visibility
+  // 3. Physically Based Architectural Float Glazing (MeshPhysicalMaterial)
+  // Low-iron float glass: standard IOR 1.52, clearcoat 1.0 for true Fresnel reflection at grazing angles,
+  // high transmission and calibrated transparency for crisp interior clarity, subtle sky reflection
   const glassMat = React.useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: isDark ? "#9CB2C2" : "#F4F8FA",
-        transmission: 0.95 * fGlazing,
+        color: isDark ? "#A0B5C4" : "#EAF0F5",
+        transmission: 0.65 * fGlazing,
         ior: 1.52,
-        roughness: 0.028,
-        metalness: 0.0,
-        thickness: 0.032,
-        attenuationColor: isDark ? "#B0C5D4" : "#EEF5F8",
-        attenuationDistance: 1.8,
-        specularIntensity: 0.98,
+        reflectivity: 0.90,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
+        roughness: 0.025,
+        metalness: 0.02,
+        thickness: 0.024,
+        attenuationColor: isDark ? "#A4BAC9" : "#EAF2F7",
+        attenuationDistance: 3.5,
+        specularIntensity: 1.0,
+        specularColor: new THREE.Color("#FFFFFF"),
         envMap: skyReflectionTexture ?? undefined,
-        envMapIntensity: 0.48,
+        envMapIntensity: 0.65,
         transparent: true,
-        opacity: Math.min(1.0, fGlazing * 1.02),
+        opacity: Math.min(0.36, fGlazing * 0.38),
         depthWrite: false,
       }),
     [isDark, fGlazing, skyReflectionTexture]
@@ -359,7 +363,7 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     [isDark, fGlazing]
   );
 
-  // Procedural Broad Soft Radial Contact Shadow Texture
+  // Procedural Broad Soft Radial Contact Shadow Texture with Crisp AO Core & Feathered Penumbra
   const contactShadowTexture = React.useMemo(() => {
     if (typeof document === "undefined") return null;
     const canvas = document.createElement("canvas");
@@ -368,11 +372,11 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    gradient.addColorStop(0, "rgba(16, 13, 10, 0.94)");
-    gradient.addColorStop(0.32, "rgba(16, 13, 10, 0.62)");
-    gradient.addColorStop(0.65, "rgba(16, 13, 10, 0.24)");
-    gradient.addColorStop(0.88, "rgba(16, 13, 10, 0.05)");
-    gradient.addColorStop(1, "rgba(16, 13, 10, 0)");
+    gradient.addColorStop(0, "rgba(18, 14, 10, 0.96)");
+    gradient.addColorStop(0.24, "rgba(18, 14, 10, 0.76)");
+    gradient.addColorStop(0.54, "rgba(18, 14, 10, 0.30)");
+    gradient.addColorStop(0.82, "rgba(18, 14, 10, 0.06)");
+    gradient.addColorStop(1, "rgba(18, 14, 10, 0)");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 128, 128);
     const texture = new THREE.CanvasTexture(canvas);
@@ -385,7 +389,19 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
       new THREE.MeshBasicMaterial({
         map: contactShadowTexture ?? undefined,
         transparent: true,
-        opacity: 0.85 * fGround,
+        opacity: 0.88 * fGround,
+        depthWrite: false,
+      }),
+    [contactShadowTexture, fGround]
+  );
+
+  // Tighter inner ambient occlusion core shadow directly under footprint
+  const coreShadowMat = React.useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        map: contactShadowTexture ?? undefined,
+        transparent: true,
+        opacity: 0.72 * fGround,
         depthWrite: false,
       }),
     [contactShadowTexture, fGround]
@@ -414,7 +430,11 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
           ───────────────────────────────────────────────────────────── */}
       {fGround > 0.02 && (
         <group position={[0, 0.001, 0]}>
-          {/* Monolith Base Footprint Shadow */}
+          {/* Monolith Tight Ambient Occlusion Footprint Core */}
+          <mesh position={[monolithX, 0.0015, 0]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
+            <planeGeometry args={[monolithWidth * 1.15, monolithDepth * 1.15]} />
+          </mesh>
+          {/* Monolith Base Footprint Feathered Shadow */}
           <mesh position={[monolithX, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
             <planeGeometry args={[monolithWidth * 2.5, monolithDepth * 2.3]} />
           </mesh>
@@ -422,7 +442,11 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
           <mesh position={[pilotisX, 0, pilotisZ]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
             <planeGeometry args={[0.95, 0.95]} />
           </mesh>
-          {/* Deep Void & Slabs Ground Shadow */}
+          {/* Deep Void & Slabs Ground Shadow Core */}
+          <mesh position={[podiumSlabX - 0.08, 0.0015, 0.10]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
+            <planeGeometry args={[podiumSlabWidth * 1.05, 2.20]} />
+          </mesh>
+          {/* Deep Void & Slabs Ground Shadow Feathered */}
           <mesh position={[podiumSlabX - 0.08, 0, 0.10]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
             <planeGeometry args={[podiumSlabWidth * 1.45, 3.10]} />
           </mesh>
@@ -537,7 +561,8 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
 
       {/* ─────────────────────────────────────────────────────────────
           4. SUBSTANTIAL CANTILEVERED HORIZONTAL SLABS
-          Solid architectural slabs projecting from the monolith with stone soffits.
+          Solid architectural slabs projecting from the monolith with stone soffits,
+          authentic drip groove reveals, arris highlights, and structural anchor reglets.
           ───────────────────────────────────────────────────────────── */}
       {fCantilever > 0.02 && (
         <group name="cantilever-slabs">
@@ -547,9 +572,17 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
             <mesh material={limestoneMat} castShadow receiveShadow>
               <boxGeometry args={[podiumSlabWidth, podiumSlabThickness, podiumSlabDepth]} />
             </mesh>
-            {/* Underside Stone Soffit (Receives natural deep chiaroscuro shadow from void) */}
+            {/* Front-Top Sunlit Arris Highlight Line (Captures raking sun along primary leading edge) */}
+            <mesh position={[0, podiumSlabThickness / 2 - 0.001, podiumSlabDepth / 2 - 0.002]} material={limestoneArrisMat}>
+              <boxGeometry args={[podiumSlabWidth, 0.003, 0.003]} />
+            </mesh>
+            {/* Underside Stone Soffit with Recessed Drip Reveal */}
             <mesh position={[0, -podiumSlabThickness / 2 - 0.005, 0]} material={limestoneSoffitMat}>
-              <boxGeometry args={[podiumSlabWidth - 0.04, 0.010, podiumSlabDepth - 0.04]} />
+              <boxGeometry args={[podiumSlabWidth - 0.03, 0.010, podiumSlabDepth - 0.03]} />
+            </mesh>
+            {/* Recessed Architectural Stone Reglet Joint (Structural expansion reveal into monolith) */}
+            <mesh position={[-podiumSlabWidth / 2 + 0.37, 0, 0]} material={limestoneJointMat}>
+              <boxGeometry args={[0.012, podiumSlabThickness + 0.002, podiumSlabDepth - 0.02]} />
             </mesh>
           </group>
 
@@ -559,13 +592,21 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
             <mesh material={limestoneMat} castShadow receiveShadow>
               <boxGeometry args={[roofSlabWidth, roofSlabThickness, roofSlabDepth]} />
             </mesh>
-            {/* Underside Stone Soffit (In natural shade) */}
+            {/* Front-Top Sunlit Arris Highlight Line */}
+            <mesh position={[0, roofSlabThickness / 2 - 0.001, roofSlabDepth / 2 - 0.002]} material={limestoneArrisMat}>
+              <boxGeometry args={[roofSlabWidth, 0.003, 0.003]} />
+            </mesh>
+            {/* Underside Stone Soffit with Recessed Drip Reveal */}
             <mesh position={[0, -roofSlabThickness / 2 - 0.005, 0]} material={limestoneSoffitMat}>
-              <boxGeometry args={[roofSlabWidth - 0.04, 0.010, roofSlabDepth - 0.04]} />
+              <boxGeometry args={[roofSlabWidth - 0.03, 0.010, roofSlabDepth - 0.03]} />
             </mesh>
             {/* Upper Roof Parapet Coping Cap with Crisp Arris Edge */}
             <mesh position={[0, roofSlabThickness / 2 + 0.015, 0]} material={copingMat} castShadow receiveShadow>
               <boxGeometry args={[roofSlabWidth + 0.04, 0.030, roofSlabDepth + 0.04]} />
+            </mesh>
+            {/* Recessed Architectural Stone Reglet Joint (Structural expansion reveal into monolith) */}
+            <mesh position={[-roofSlabWidth / 2 + 0.38, 0, 0]} material={limestoneJointMat}>
+              <boxGeometry args={[0.012, roofSlabThickness + 0.002, roofSlabDepth - 0.02]} />
             </mesh>
           </group>
         </group>
@@ -579,74 +620,132 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
           ───────────────────────────────────────────────────────────── */}
       {fGlazing > 0.02 && (
         <group name="glazing-and-interior">
-          {/* Subtle Warm Interior Architectural Light (Ground Floor Entry) */}
+          {/* Subtle Warm Downward Architectural Wash (Ground Floor Entry Threshold) */}
           <pointLight
-            position={[0.60, pilotisHeight / 2 + 0.08, -0.45]}
-            intensity={0.42 * fGlazing}
-            distance={2.8}
-            color="#FFE6C7"
+            position={[0.55, pilotisHeight / 2 + 0.04, -0.36]}
+            intensity={0.24 * fGlazing}
+            distance={2.4}
+            color="#FFE4C4"
             decay={2}
           />
 
-          {/* Ground Floor Deep Recessed Entry Embrasure (Set back into void shadow pocket at Z = -0.28) */}
-          <group position={[0.60, pilotisHeight / 2, -0.28]}>
-            {/* Hollow Architectural Bronze Perimeter Frame (Head, Sill, Jambs) */}
-            <mesh position={[0, (pilotisHeight - 0.04) / 2 - 0.010, 0.06]} material={bronzeMat}>
-              <boxGeometry args={[1.68, 0.020, 0.08]} />
-            </mesh>
-            <mesh position={[0, -(pilotisHeight - 0.04) / 2 + 0.012, 0.06]} material={bronzeMat}>
-              <boxGeometry args={[1.68, 0.024, 0.10]} />
-            </mesh>
-            <mesh position={[-1.68 / 2 + 0.010, 0, 0.06]} material={bronzeMat}>
-              <boxGeometry args={[0.020, pilotisHeight - 0.04, 0.08]} />
-            </mesh>
-            <mesh position={[1.68 / 2 - 0.010, 0, 0.06]} material={bronzeMat}>
-              <boxGeometry args={[0.020, pilotisHeight - 0.04, 0.08]} />
+          {/* Ground Floor Deep Recessed Entry Embrasure (Deep chiaroscuro void pocket at Z = -0.32) */}
+          <group position={[0.60, pilotisHeight / 2, -0.32]}>
+            {/* Finished Stone Entry Threshold Floor Slab */}
+            <mesh position={[0, -(pilotisHeight - 0.04) / 2 + 0.010, -0.10]} material={limestoneMediumMat} receiveShadow>
+              <boxGeometry args={[1.72, 0.024, 0.45]} />
             </mesh>
 
-            {/* Recessed Solar Glass Pane (Physical 12mm Glass Pane) */}
-            <mesh position={[0, 0, 0.02]} material={glassMat}>
-              <boxGeometry args={[1.62, pilotisHeight - 0.10, 0.012]} />
+            {/* Recessed Stone Ceiling Soffit over Entrance Lobby */}
+            <mesh position={[0, (pilotisHeight - 0.04) / 2 - 0.004, -0.10]} material={limestoneSoffitMat}>
+              <boxGeometry args={[1.72, 0.016, 0.45]} />
             </mesh>
-            {/* Interior Depth Partition Wall */}
-            <mesh position={[0.25, 0, -0.22]} material={interiorPartitionMat}>
-              <boxGeometry args={[0.95, pilotisHeight - 0.12, 0.05]} />
+
+            {/* Left Masonry Return Wall Enclosing Entrance Void */}
+            <mesh position={[-1.72 / 2 + 0.015, 0, -0.10]} material={limestoneMediumMat} receiveShadow>
+              <boxGeometry args={[0.030, pilotisHeight - 0.04, 0.45]} />
             </mesh>
-            {/* Warm Amber Interior Luminous Glow Plane (2800K occupancy) */}
-            <mesh position={[0, 0, -0.28]} material={interiorGlowMat}>
-              <planeGeometry args={[1.56, pilotisHeight - 0.12]} />
+
+            {/* Recessed Rear Entrance Wall in Shadowed Stone (Physical enclosure, NO flat glowing plane) */}
+            <mesh position={[0, 0, -0.28]} material={limestoneSoffitMat} receiveShadow>
+              <boxGeometry args={[1.72, pilotisHeight - 0.04, 0.06]} />
+            </mesh>
+
+            {/* Slender Architectural Bronze Entry Portal Frame */}
+            <mesh position={[0, (pilotisHeight - 0.04) / 2 - 0.008, 0.04]} material={bronzeMat}>
+              <boxGeometry args={[1.68, 0.016, 0.070]} />
+            </mesh>
+            <mesh position={[0, -(pilotisHeight - 0.04) / 2 + 0.010, 0.04]} material={bronzeMat}>
+              <boxGeometry args={[1.68, 0.020, 0.080]} />
+            </mesh>
+            <mesh position={[-1.68 / 2 + 0.008, 0, 0.04]} material={bronzeMat}>
+              <boxGeometry args={[0.016, pilotisHeight - 0.04, 0.070]} />
+            </mesh>
+            <mesh position={[1.68 / 2 - 0.008, 0, 0.04]} material={bronzeMat}>
+              <boxGeometry args={[0.016, pilotisHeight - 0.04, 0.070]} />
+            </mesh>
+
+            {/* Architectural Bronze Door Division Mullion */}
+            <mesh position={[0.15, 0, 0.035]} material={bronzeSatinMat}>
+              <boxGeometry args={[0.014, pilotisHeight - 0.06, 0.045]} />
+            </mesh>
+
+            {/* Recessed Ground Floor Float Glazing Pane */}
+            <mesh position={[0, 0, 0.01]} material={glassMat}>
+              <boxGeometry args={[1.64, pilotisHeight - 0.08, 0.012]} />
+            </mesh>
+
+            {/* Interior Depth Architectural Partition Pillar */}
+            <mesh position={[0.30, 0, -0.16]} material={interiorPartitionMat}>
+              <boxGeometry args={[0.85, pilotisHeight - 0.08, 0.06]} />
             </mesh>
           </group>
 
           {/* Upper Gallery Cantilevered Glazed Pavilion (Recessed deep beneath roof canopy) */}
           <group position={[roofSlabX, (podiumSlabY + roofSlabY) / 2, 0.02]}>
-            {/* Hollow Architectural Bronze Encasement Frame with Recessed Jambs */}
-            <mesh position={[0, ((roofSlabY - podiumSlabY) - 0.18) / 2 - 0.010, 0.07]} material={bronzeMat}>
-              <boxGeometry args={[2.04, 0.020, 0.12]} />
+            {/* ── Masonry Stone Window Reveals (Authentic Head, Sill Curb & Jamb Returns) ── */}
+            {/* Stone Head Lintel Reveal (Underside pocket beneath roof canopy) */}
+            <mesh position={[0, ((roofSlabY - podiumSlabY) - 0.08) / 2, 0.06]} material={limestoneSoffitMat}>
+              <boxGeometry args={[2.08, 0.040, 0.16]} />
             </mesh>
-            <mesh position={[0, -((roofSlabY - podiumSlabY) - 0.18) / 2 + 0.012, 0.07]} material={bronzeMat}>
-              <boxGeometry args={[2.04, 0.024, 0.14]} />
+            {/* Stone Sill Masonry Curb (Crisp architectural sill reveal in front of glazing) */}
+            <mesh position={[0, -((roofSlabY - podiumSlabY) - 0.07) / 2, 0.06]} material={limestoneMediumMat}>
+              <boxGeometry args={[2.08, 0.035, 0.18]} />
             </mesh>
-            <mesh position={[-2.04 / 2 + 0.010, 0, 0.07]} material={bronzeMat}>
-              <boxGeometry args={[0.020, (roofSlabY - podiumSlabY) - 0.18, 0.14]} />
+            {/* Left Masonry Jamb Return (Connects window envelope naturally to monolith shear wall) */}
+            <mesh position={[-2.08 / 2 - 0.015, 0, 0.03]} material={limestoneMediumMat} castShadow receiveShadow>
+              <boxGeometry args={[0.036, (roofSlabY - podiumSlabY) - 0.08, 0.22]} />
             </mesh>
-            <mesh position={[2.04 / 2 - 0.010, 0, 0.07]} material={bronzeMat}>
-              <boxGeometry args={[0.020, (roofSlabY - podiumSlabY) - 0.18, 0.14]} />
-            </mesh>
-
-            {/* Architectural Vertical Bronze Mullion (Clean 1/3 structural bay ratio) */}
-            <mesh position={[-0.32, 0, 0.05]} material={bronzeSatinMat}>
-              <boxGeometry args={[0.018, (roofSlabY - podiumSlabY) - 0.18, 0.05]} />
-            </mesh>
-
-            {/* Deeply Recessed Physically Based Architectural Glazing (Physical 12mm Glass Pane) */}
-            <mesh position={[0, 0, 0.01]} material={glassMat}>
-              <boxGeometry args={[1.98, (roofSlabY - podiumSlabY) - 0.24, 0.012]} />
+            {/* Right Masonry Jamb Return (Crisp stone stop framing the glass envelope) */}
+            <mesh position={[2.08 / 2 + 0.015, 0, 0.03]} material={limestoneMediumMat} castShadow receiveShadow>
+              <boxGeometry args={[0.036, (roofSlabY - podiumSlabY) - 0.08, 0.22]} />
             </mesh>
 
-            {/* Left Shadow Recess Return (Deep shadow pocket between stone outer edge and bronze frame) */}
-            <mesh position={[-2.04 / 2 - 0.02, 0, -0.04]} material={bronzeMat}>
-              <boxGeometry args={[0.04, (roofSlabY - podiumSlabY) - 0.18, 0.24]} />
+            {/* ── Slender Architectural Bronze Perimeter Frame (Reduced Sightlines) ── */}
+            {/* Head Channel */}
+            <mesh position={[0, 1.05 / 2 - 0.007, 0.01]} material={bronzeMat}>
+              <boxGeometry args={[2.02, 0.014, 0.060]} />
+            </mesh>
+            {/* Sill Channel */}
+            <mesh position={[0, -1.05 / 2 + 0.007, 0.01]} material={bronzeMat}>
+              <boxGeometry args={[2.02, 0.014, 0.068]} />
+            </mesh>
+            {/* Left Jamb */}
+            <mesh position={[-2.02 / 2 + 0.007, 0, 0.01]} material={bronzeMat}>
+              <boxGeometry args={[0.014, 1.05, 0.060]} />
+            </mesh>
+            {/* Right Jamb */}
+            <mesh position={[2.02 / 2 - 0.007, 0, 0.01]} material={bronzeMat}>
+              <boxGeometry args={[0.014, 1.05, 0.060]} />
+            </mesh>
+
+            {/* Subtle Bronze Sill Arris Specular Highlight Catch */}
+            <mesh position={[0, -1.05 / 2 + 0.014, 0.042]} material={limestoneArrisMat}>
+              <boxGeometry args={[2.02, 0.003, 0.003]} />
+            </mesh>
+
+            {/* Visible Architectural Glass Perimeter Spacer Seals (Framing pane perimeter) */}
+            <mesh position={[0, 1.02 / 2 - 0.003, -0.022]} material={bronzeMat}>
+              <boxGeometry args={[1.98, 0.006, 0.010]} />
+            </mesh>
+            <mesh position={[0, -1.02 / 2 + 0.003, -0.022]} material={bronzeMat}>
+              <boxGeometry args={[1.98, 0.006, 0.010]} />
+            </mesh>
+            <mesh position={[-1.98 / 2 + 0.003, 0, -0.022]} material={bronzeMat}>
+              <boxGeometry args={[0.006, 1.02, 0.010]} />
+            </mesh>
+            <mesh position={[1.98 / 2 - 0.003, 0, -0.022]} material={bronzeMat}>
+              <boxGeometry args={[0.006, 1.02, 0.010]} />
+            </mesh>
+
+            {/* Deeply Recessed Physically Based Float Glazing (Sitting deep inside the bronze pocket) */}
+            <mesh position={[0, 0, -0.022]} material={glassMat}>
+              <boxGeometry args={[1.98, 1.02, 0.012]} />
+            </mesh>
+
+            {/* Left Shadow Recess Return (Deep architectural shadow between stone monolith and glazing) */}
+            <mesh position={[-2.04 / 2 - 0.02, 0, -0.06]} material={bronzeMat}>
+              <boxGeometry args={[0.04, (roofSlabY - podiumSlabY) - 0.14, 0.20]} />
             </mesh>
 
             {/* Curated Contemporary Architectural Interior (Sofa, side table, floor lamp & volumetric room) */}

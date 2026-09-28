@@ -87,6 +87,17 @@ export function RealEstateInterior({ isDark = false, phases }: RealEstateInterio
     [contactShadowTexture, fGlazing]
   );
 
+  const contactShadowCoreMat = React.useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        map: contactShadowTexture ?? undefined,
+        transparent: true,
+        opacity: Math.min(0.85, fGlazing * 0.90),
+        depthWrite: false,
+      }),
+    [contactShadowTexture, fGlazing]
+  );
+
   // 2. Procedural Subtle Timber Floor Texture (Natural plank sheen under glazing)
   const timberFloorTexture = React.useMemo(() => {
     if (typeof document === "undefined") return null;
@@ -357,27 +368,28 @@ export function RealEstateInterior({ isDark = false, phases }: RealEstateInterio
   return (
     <group name="real-estate-contemporary-interior">
       {/* ─────────────────────────────────────────────────────────────
-          1. VOLUMETRIC ROOM ENCLOSURE (Floor, Ceiling, Rear Wall & Baseboard)
-          Clear material differentiation through roughness & tone:
-          Floor (0.48 satin) | Ceiling (0.94 matte) | Wall (0.84 limestone plaster)
+          1. VOLUMETRIC ROOM ENCLOSURE (Floor, Ceiling Cove, Rear Wall, Side Returns & Baseboard)
+          Encloses the room with authentic architectural surfaces:
+          - Finished floor plane with subtle satin sheen
+          - Dropped plaster ceiling plane with perimeter shadow cove reveal
+          - Rear wall with subtle vertical architectural panel reveal
+          - Left & right interior side wall returns providing genuine 3D enclosure
           ───────────────────────────────────────────────────────────── */}
-      {/* Interior Floor Plane (Warm natural timber/micro-cement with soft specular sheen) */}
+      {/* Finished Interior Floor Slab (Warm natural timber/micro-cement with soft specular sheen) */}
       <mesh
-        position={[0, floorY + 0.001, roomCenterZ]}
-        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, floorY + 0.008, roomCenterZ]}
         material={floorMat}
         receiveShadow
       >
-        <planeGeometry args={[1.98, roomDepth]} />
+        <boxGeometry args={[1.98, 0.016, roomDepth]} />
       </mesh>
 
-      {/* Interior Ceiling Plane (Smooth recessed off-white architectural plaster) */}
+      {/* Dropped Plaster Ceiling Plane with Perimeter Architectural Shadow Cove Reveal */}
       <mesh
-        position={[0, ceilingY - 0.001, roomCenterZ]}
-        rotation={[Math.PI / 2, 0, 0]}
+        position={[0, ceilingY - 0.010, roomCenterZ]}
         material={ceilingMat}
       >
-        <planeGeometry args={[1.98, roomDepth]} />
+        <boxGeometry args={[1.94, 0.018, roomDepth - 0.04]} />
       </mesh>
 
       {/* Recessed Rear Enclosure Wall (Set back at Z = -0.50 with genuine spatial depth) */}
@@ -389,13 +401,66 @@ export function RealEstateInterior({ isDark = false, phases }: RealEstateInterio
         <planeGeometry args={[1.98, ceilingY - floorY]} />
       </mesh>
 
+      {/* Subtle Vertical Architectural Panel Reveal on Rear Wall */}
+      <mesh
+        position={[0.22, (floorY + ceilingY) / 2, -roomDepth + 0.002]}
+        material={interiorBronzeMat}
+      >
+        <boxGeometry args={[0.004, ceilingY - floorY, 0.004]} />
+      </mesh>
+
+      {/* Left Interior Side Wall Return (Encloses the room volume along the monolithic shear mass) */}
+      <mesh
+        position={[-1.98 / 2, (floorY + ceilingY) / 2, roomCenterZ]}
+        rotation={[0, Math.PI / 2, 0]}
+        material={rearWallMat}
+        receiveShadow
+      >
+        <planeGeometry args={[roomDepth, ceilingY - floorY]} />
+      </mesh>
+
+      {/* Right Interior Side Wall Return */}
+      <mesh
+        position={[1.98 / 2, (floorY + ceilingY) / 2, roomCenterZ]}
+        rotation={[0, -Math.PI / 2, 0]}
+        material={rearWallMat}
+        receiveShadow
+      >
+        <planeGeometry args={[roomDepth, ceilingY - floorY]} />
+      </mesh>
+
       {/* Architectural Bronze Perimeter Baseboard / Shadow Reveal */}
       <mesh
-        position={[0, floorY + 0.010, -roomDepth + 0.004]}
+        position={[0, floorY + 0.016, -roomDepth + 0.004]}
         material={interiorBronzeMat}
       >
         <boxGeometry args={[1.98, 0.018, 0.008]} />
       </mesh>
+
+      {/* ─────────────────────────────────────────────────────────────
+          1b. RESTRAINED SECONDARY ARCHITECTURAL JOINERY (Scale & Depth)
+          Low-profile built-in smoked walnut credenza plinth along the rear wall:
+          - Deep background plane behind sofa, creating rich 3-layer spatial depth
+          - Pure architectural millwork, zero decorative clutter
+          ───────────────────────────────────────────────────────────── */}
+      <group position={[-0.18, floorY + 0.016, -roomDepth + 0.055]}>
+        {/* Soft Contact Shadow beneath joinery */}
+        <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
+          <planeGeometry args={[0.74, 0.12]} />
+        </mesh>
+        {/* Recessed Dark Bronze Base Reveal Plinth */}
+        <mesh position={[0, 0.010, 0]} material={interiorBronzeMat}>
+          <boxGeometry args={[0.68, 0.020, 0.075]} />
+        </mesh>
+        {/* Smoked Walnut / Dark Satin Bronze Joinery Console */}
+        <mesh position={[0, 0.065, 0]} material={sideTableMat} castShadow receiveShadow>
+          <boxGeometry args={[0.72, 0.090, 0.088]} />
+        </mesh>
+        {/* Crisp Top Bronze Shadow Cap */}
+        <mesh position={[0, 0.111, 0]} material={interiorBronzeMat}>
+          <boxGeometry args={[0.724, 0.003, 0.092]} />
+        </mesh>
+      </group>
 
       {/* ─────────────────────────────────────────────────────────────
           2. UPGRADED CONTEMPORARY ARCHITECTURAL SOFA
@@ -409,13 +474,22 @@ export function RealEstateInterior({ isDark = false, phases }: RealEstateInterio
           - Positioned at X = 0.08, Z = -0.22 (set back 7cm from glass facade)
           ───────────────────────────────────────────────────────────── */}
       <group position={[0.08, floorY, -0.22]}>
-        {/* Ground Contact Shadow (Soft ambient occlusion grounding the sofa) */}
+        {/* Tight Contact Shadow Core directly beneath plinth base */}
         <mesh
-          position={[0, 0.0015, 0.01]}
+          position={[0, 0.002, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          material={contactShadowCoreMat}
+        >
+          <planeGeometry args={[0.88, 0.33]} />
+        </mesh>
+
+        {/* Soft Feathered Ground Contact Shadow (Ambient occlusion grounding the sofa) */}
+        <mesh
+          position={[0, 0.001, 0.01]}
           rotation={[-Math.PI / 2, 0, 0]}
           material={contactShadowMat}
         >
-          <planeGeometry args={[0.96, 0.44]} />
+          <planeGeometry args={[1.08, 0.48]} />
         </mesh>
 
         {/* Recessed Shadow Plinth Base (Dark bronze architectural reveal) */}
@@ -616,18 +690,18 @@ export function RealEstateInterior({ isDark = false, phases }: RealEstateInterio
       {/* Downward Floor Lamp Pool (Soft 2800K illumination grazing side table & sofa arm) */}
       <pointLight
         position={[0.64, floorY + 0.46, -0.26]}
-        intensity={0.28 * fGlazing}
-        distance={1.45}
-        color="#FFE2BE"
+        intensity={0.65 * fGlazing}
+        distance={2.20}
+        color="#FFDFC0"
         decay={2}
       />
 
       {/* Soft Ambient Interior Bounce (Subtle 2800K architectural occupancy wash) */}
       <pointLight
         position={[0.10, floorY + 0.52, -0.28]}
-        intensity={0.16 * fGlazing}
-        distance={3.20}
-        color="#FFF1E2"
+        intensity={0.42 * fGlazing}
+        distance={3.80}
+        color="#FFF2E4"
         decay={2}
       />
     </group>
