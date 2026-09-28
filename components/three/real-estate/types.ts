@@ -46,7 +46,7 @@ export const REAL_ESTATE_PALETTE = {
 export const ARCHITECTURAL_SCALE = {
   // Architectural origin in Three.js world space
   buildingPos: [1.06, -0.62, -2.85] as const,
-  buildingRotationY: 0.10, // ~+5.7 deg: restrained architectural 3/4 view revealing left monolith flank, front facade & void depth
+  buildingRotationY: -0.24, // ~-13.8 deg: subtly oriented toward left editorial content, opening facade & interior toward text while maintaining 3/4 depth
 
   // Monolithic Shear Mass (Left Anchor - reduced dominance by ~10% to frame the architecture)
   monolithWidth: 0.86,

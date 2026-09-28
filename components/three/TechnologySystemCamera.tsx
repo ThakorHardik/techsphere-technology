@@ -376,14 +376,14 @@ export function TechnologySystemCamera({
   const industriesBridgePos = isMobile
     ? new THREE.Vector3(0.35, -0.65, 4.35)
     : isTablet
-    ? new THREE.Vector3(-0.40, 0.14, 4.40)
-    : new THREE.Vector3(-0.55, 0.72, 4.30);
+    ? new THREE.Vector3(-0.36, 0.12, 4.25)
+    : new THREE.Vector3(-0.48, 0.68, 4.18);
 
   const industriesBridgeLook = isMobile
     ? new THREE.Vector3(0.35, 0.40, -2.50)
     : isTablet
     ? new THREE.Vector3(0.60, 0.12, -2.85)
-    : new THREE.Vector3(0.52, 0.75, -2.85);
+    : new THREE.Vector3(0.56, 0.72, -2.85);
 
   // Dedicated Mobile Stage 13 Waypoints (p in [8.45, 10.00])
   // Calibrated for Zone 2: begins ~48%, finishes ~91%, intentional 7-9% breathing gap from CTA

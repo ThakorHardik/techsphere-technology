@@ -12,6 +12,7 @@ import {
 } from "./types";
 import { RealEstateStructure } from "./RealEstateStructure";
 import { RealEstateScreens } from "./RealEstateScreens";
+import { RealEstateLandscape } from "./RealEstateLandscape";
 import { RealEstateDatum } from "./RealEstateDatum";
 
 /**
@@ -38,10 +39,11 @@ export function RealEstateEnvironment({
   const [phases, setPhases] = useState<ArchitecturalRevealPhases>(() => computeArchitecturalPhases(0));
 
   const { buildingPos: desktopBuildingPos, buildingRotationY } = ARCHITECTURAL_SCALE;
+  const currentBuildingRotationY = isMobile ? -0.12 : buildingRotationY;
   const currentBuildingPos: [number, number, number] = isMobile
-    ? [-0.04, -1.08, -2.85]
+    ? [0.06, -1.08, -2.85]
     : [desktopBuildingPos[0], desktopBuildingPos[1], desktopBuildingPos[2]];
-  const currentScale = isMobile ? 0.72 : 0.92;
+  const currentScale = isMobile ? 0.67 : 0.92;
 
   // Master scale calibrated so building has substantial architectural weight
   // On desktop: X: 44-93%, Y: 24-78%
@@ -131,13 +133,16 @@ export function RealEstateEnvironment({
       <group
         ref={buildingGroupRef}
         position={currentBuildingPos}
-        rotation={[0, buildingRotationY, 0]}
+        rotation={[0, currentBuildingRotationY, 0]}
       >
         {/* Monolithic Limestone Mass, Deep Two-Story Void, Slabs & Glazing */}
         <RealEstateStructure isDark={isDark} phases={phases} />
 
         {/* Selective Natural Architectural Teak Timber Louver Screen */}
         <RealEstateScreens isDark={isDark} phases={phases} />
+
+        {/* Restrained Contemporary Architectural Landscape & Ground Treatment */}
+        <RealEstateLandscape isDark={isDark} phases={phases} />
       </group>
 
       {/* ─────────────────────────────────────────────────────────────

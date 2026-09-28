@@ -372,11 +372,11 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    gradient.addColorStop(0, "rgba(18, 14, 10, 0.96)");
-    gradient.addColorStop(0.24, "rgba(18, 14, 10, 0.76)");
-    gradient.addColorStop(0.54, "rgba(18, 14, 10, 0.30)");
-    gradient.addColorStop(0.82, "rgba(18, 14, 10, 0.06)");
-    gradient.addColorStop(1, "rgba(18, 14, 10, 0)");
+    gradient.addColorStop(0, "rgba(20, 15, 10, 0.90)");
+    gradient.addColorStop(0.18, "rgba(20, 15, 10, 0.55)");
+    gradient.addColorStop(0.42, "rgba(20, 15, 10, 0.18)");
+    gradient.addColorStop(0.72, "rgba(20, 15, 10, 0.03)");
+    gradient.addColorStop(1, "rgba(20, 15, 10, 0)");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 128, 128);
     const texture = new THREE.CanvasTexture(canvas);
@@ -389,7 +389,7 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
       new THREE.MeshBasicMaterial({
         map: contactShadowTexture ?? undefined,
         transparent: true,
-        opacity: 0.88 * fGround,
+        opacity: 0.32 * fGround,
         depthWrite: false,
       }),
     [contactShadowTexture, fGround]
@@ -401,7 +401,7 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
       new THREE.MeshBasicMaterial({
         map: contactShadowTexture ?? undefined,
         transparent: true,
-        opacity: 0.72 * fGround,
+        opacity: 0.70 * fGround,
         depthWrite: false,
       }),
     [contactShadowTexture, fGround]
@@ -432,23 +432,23 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
         <group position={[0, 0.001, 0]}>
           {/* Monolith Tight Ambient Occlusion Footprint Core */}
           <mesh position={[monolithX, 0.0015, 0]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
-            <planeGeometry args={[monolithWidth * 1.15, monolithDepth * 1.15]} />
+            <planeGeometry args={[monolithWidth * 1.04, monolithDepth * 1.04]} />
           </mesh>
           {/* Monolith Base Footprint Feathered Shadow */}
-          <mesh position={[monolithX, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
-            <planeGeometry args={[monolithWidth * 2.5, monolithDepth * 2.3]} />
+          <mesh position={[monolithX + 0.08, 0, -0.06]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
+            <planeGeometry args={[monolithWidth * 1.75, monolithDepth * 1.65]} />
           </mesh>
-          {/* Pilotis Base Footprint Shadow */}
-          <mesh position={[pilotisX, 0, pilotisZ]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
-            <planeGeometry args={[0.95, 0.95]} />
+          {/* Pilotis Base Footprint Tight AO (Accurate circular column contact) */}
+          <mesh position={[pilotisX, 0.0015, pilotisZ]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
+            <planeGeometry args={[0.22, 0.22]} />
           </mesh>
           {/* Deep Void & Slabs Ground Shadow Core */}
-          <mesh position={[podiumSlabX - 0.08, 0.0015, 0.10]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
-            <planeGeometry args={[podiumSlabWidth * 1.05, 2.20]} />
+          <mesh position={[podiumSlabX - 0.06, 0.0015, 0.04]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
+            <planeGeometry args={[podiumSlabWidth * 0.95, 1.80]} />
           </mesh>
-          {/* Deep Void & Slabs Ground Shadow Feathered */}
-          <mesh position={[podiumSlabX - 0.08, 0, 0.10]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
-            <planeGeometry args={[podiumSlabWidth * 1.45, 3.10]} />
+          {/* Deep Void & Slabs Ground Shadow Feathered Penumbra */}
+          <mesh position={[podiumSlabX + 0.12, 0, -0.06]} rotation={[-Math.PI / 2, 0, 0]} material={contactShadowMat}>
+            <planeGeometry args={[podiumSlabWidth * 1.20, 2.30]} />
           </mesh>
         </group>
       )}
@@ -468,6 +468,11 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
           {/* Crisp Arris Corner Highlight Line (Captures delicate daylight sheen along front-left corner) */}
           <mesh position={[-monolithWidth / 2 + 0.003, 0, monolithDepth / 2 - 0.003]} material={limestoneArrisMat}>
             <boxGeometry args={[0.006, monolithHeight, 0.006]} />
+          </mesh>
+
+          {/* Monolith Architectural Ground Base Reveal Reglet (Crisp stone-to-grade shadow joint) */}
+          <mesh position={[0, -monolithHeight / 2 + 0.005, 0]} material={bronzeMat}>
+            <boxGeometry args={[monolithWidth + 0.004, 0.010, monolithDepth + 0.004]} />
           </mesh>
 
           {/* Stepped Forward Limestone Pilaster Relief (Catches raking sun, casts sharp shadow) */}
@@ -542,9 +547,18 @@ export function RealEstateStructure({ isDark = false, phases }: RealEstateStruct
             <cylinderGeometry args={[pilotisRadius, pilotisRadius, pilotisHeight, 32]} />
           </mesh>
 
+          {/* Pilotis Column Base Contact AO on Terrace Slab */}
+          <mesh position={[pilotisX, 0.0185, pilotisZ]} rotation={[-Math.PI / 2, 0, 0]} material={coreShadowMat}>
+            <planeGeometry args={[0.16, 0.16]} />
+          </mesh>
+
           {/* Paved Ground Floor Terrace Slab extending deep under the void */}
-          <mesh position={[podiumSlabX - 0.10, 0.015, -0.22]} material={limestoneMediumMat} receiveShadow>
-            <boxGeometry args={[podiumSlabWidth - 0.20, 0.030, 1.15]} />
+          <mesh position={[podiumSlabX - 0.10, 0.009, -0.22]} material={limestoneMediumMat} receiveShadow>
+            <boxGeometry args={[podiumSlabWidth - 0.20, 0.018, 1.15]} />
+          </mesh>
+          {/* Terrace Slab Front Edge Sunlit Arris Catch */}
+          <mesh position={[podiumSlabX - 0.10, 0.0175, -0.22 + 1.15 / 2 - 0.001]} material={limestoneArrisMat}>
+            <boxGeometry args={[podiumSlabWidth - 0.20, 0.002, 0.003]} />
           </mesh>
 
           {/* Deep Void Enclosing Left Return Wall (Connects monolith to rear cavity in shadow) */}
